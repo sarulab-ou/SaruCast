@@ -71,3 +71,21 @@ $env:PYTHONUTF8='1'; $env:PYTHONIOENCODING='utf-8'; $env:CI='true'
 ```
 
 最終EXEを署名し、タイムスタンプと署名状態を確認してからZIPを作る。省略時は未署名の試用版。今回署名は未実行。
+
+## 任意のインストーラー版
+
+ZIPが主な配布物。ショートカット登録を希望する利用者向けに`SaruCast-Setup-win-x64.exe`と同名の`.sha256`を追加する。既存ZIPを変更・再発行せず、そのアプリ一式を利用する。
+
+```powershell
+# ZIPと.zip.sha256を準備した後に実行する。任意でソースcommitを記録。
+./scripts/build-installer.ps1 -PackagingRevision <installer-source-commit>
+# 現在のユーザーのスタートメニューとデスクトップを実際に使う試験。
+# 既存のSaruCast登録があれば中止し、試験後は試験用の登録を削除する。
+./scripts/verify-installer.ps1
+```
+
+NSISはUbuntu公式の3.09-4ubuntu1の2パッケージをSHA-256固定で取得し、`.tools/nsis-root`へdpkg-debで展開する。システムへインストールしない。コンパイルはWSLで行う。開発時の取得以外にネットワークは不要で、利用者へNSISの導入を要求しない。
+
+利用者単位の導入（RequestExecutionLevel=user）。両ショートカットを標準で作成し、アンインストール登録も現在のユーザーに限定する。任意の署名証明書は`-CertificateThumbprint`でセットアップEXEへ適用できる。今回の配布物は未署名。
+
+既存v0.1.2 ZIPのハッシュとアプリは維持する。追加インストーラーのビルド定義は`v0.1.2-installer.1`タグで固定し、セットアップのInstaller-Info.txtへ入力ZIPのハッシュと包装用ソースcommitを記録する。元のv0.1.2タグは変更しない。

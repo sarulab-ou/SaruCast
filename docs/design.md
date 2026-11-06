@@ -32,7 +32,9 @@ Receiverへ提案する200msのtargetDelayや、受信確認までの時間は�
 
 ## 配布・停止・ネットワーク
 
-許可されたZIP版のみを作る。`SaruCast-win-x64.zip`を全体展開し、最上位の`SaruCast.exe`を起動する。SelfContained=true、win-x64、PublishSingleFile=false。trimming／NativeAOTなし。.NETランタイム、DLL、tools/FFmpeg、第三者通知、対応FFmpegソース・ビルド設定を同梱する。利用者の.NET/VC++/FFmpeg/Bonjour追加インストール、初回依存ダウンロードは不要。設定・ログはユーザー領域へ保存し、配布先へ書き込まない。
+ZIP版を主な配布形式とし、追加の依頼によりNSIS製の任意インストーラー版も用意する。`SaruCast-win-x64.zip`を全体展開し、最上位の`SaruCast.exe`を起動する。SelfContained=true、win-x64、PublishSingleFile=false。trimming／NativeAOTなし。.NETランタイム、DLL、tools/FFmpeg、第三者通知、対応FFmpegソース・ビルド設定を同梱する。利用者の.NET/VC++/FFmpeg/Bonjour追加インストール、初回依存ダウンロードは不要。設定・ログはユーザー領域へ保存し、配布先へ書き込まない。
+
+インストーラーは既存のZIPをSHA-256で検証して利用し、アプリのEXE・DLL・FFmpegを変更しない。インストーラー用のREADME・文書・依存一覧・NSIS通知だけを追加更新し、専用のSHA256SUMS.txtを作る。原ZIPの一覧はZIP-SHA256SUMS.txtに保持する。現在のユーザーのLocalAppData/Programs/SaruCastへ配置し、HKCUのアンインストール登録とスタートメニュー／デスクトップのショートカットを作る。自動起動・自動配信・サービス・関連付け・Firewall変更は追加しない。更新時は空のフォルダーか所有マーカーのある既存インストールのみ許可し、使用中EXEへの上書きを拒否する。アンインストールは発行時の既知ファイルだけを削除し、ディレクトリを再帰削除しない。
 
 mDNSを各IPv4 NICで照会し、手動IPv4も許可する。Cast TCP接続が選んだローカルIPv4へUDPソケットもbindし、選択したテレビのIP・回答ポートへconnectする。TCP制御は通常8009、メディアは回答された動的UDPポートと応答。HTTP待受はない。Firewallを全面的に無効化しない。暗号鍵やOFFER全体をログへ書かない。
 

@@ -32,5 +32,21 @@
       "chromiacast": "65a398c7fe1b0b65c5fe9e3455f047eae5b50631",
       "CastMirror": "726b2489aa5d225e9e4243734a01ed3240014bbc"
     }
+  },
+  "installer": {
+    "engine": "NSIS",
+    "version": "3.09-4ubuntu1",
+    "packages": [
+      {
+        "file": "nsis_3.09-4ubuntu1_amd64.deb",
+        "url": "https://archive.ubuntu.com/ubuntu/pool/universe/n/nsis/nsis_3.09-4ubuntu1_amd64.deb",
+        "sha256": "9e061bef1a8b611aeb2ea76d9a3bd7722b960ca1a9dff8e38d2ab51e5a8f5e5b"
+      },
+      {
+        "file": "nsis-common_3.09-4ubuntu1_all.deb",
+        "url": "https://archive.ubuntu.com/ubuntu/pool/universe/n/nsis/nsis-common_3.09-4ubuntu1_all.deb",
+        "sha256": "49471b9debdee4751ebb4caf6b705cc4c678eebfaecefbe56362258893f85859"
+      }
+    ]
   }
 }
