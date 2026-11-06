@@ -40,7 +40,7 @@ try {
         if ($LASTEXITCODE -ne 0 -or $probe.streams[0].codec_name -ne 'h264' -or [int]$probe.streams[0].nb_read_frames -lt 55) { throw 'Packaged H.264 decode/count failed.' }
         $lumaFile = Join-Path $target "luma-$hardware.txt"
         # FFmpeg filter options use ':' as a separator, so use a relative, forward-slash path.
-        $lumaRelative = [IO.Path]::GetRelativePath($repo, $lumaFile).Replace('\','/')
+        $lumaRelative = $lumaFile.Substring($repo.Length + 1).Replace('\','/')
         & (Join-Path $target 'tools/ffmpeg.exe') -hide_banner -loglevel error -f h264 -i $video -vf "signalstats,metadata=print:key=lavfi.signalstats.YAVG:file='$lumaRelative'" -f null NUL
         if ($LASTEXITCODE -ne 0) { throw 'Packaged decoded image inspection failed.' }
         $luma = @(Get-Content -LiteralPath $lumaFile | Where-Object { $_ -like 'lavfi.signalstats.YAVG=*' } | ForEach-Object { [double]::Parse(($_ -split '=')[1], [Globalization.CultureInfo]::InvariantCulture) })

@@ -1,5 +1,7 @@
 # 再現手順
 
+以下はリポジトリのソースツリーで実行する開発手順です。配布ZIPの通常利用には不要です。
+
 Windows PowerShell、WSL Ubuntu、既存のmake/GCC/MinGW-w64クロスコンパイラが開発に必要。実行利用者には不要。SDKはシステムへインストールせず.toolsへ取得する。
 
 ```powershell
