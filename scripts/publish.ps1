@@ -8,6 +8,7 @@ $env:DOTNET_NOLOGO = '1'
 Set-Location (Split-Path $PSScriptRoot -Parent)
 & "$PSScriptRoot/bootstrap.ps1"
 $repo = (Get-Location).Path
+$buildOutput = Join-Path $repo 'artifacts/build'
 if ($RebuildFfmpeg -or -not (Test-Path .tools/ffmpeg/ffmpeg.exe)) {
     $linuxPath = '/mnt/' + $repo.Substring(0,1).ToLowerInvariant() + $repo.Substring(2).Replace('\','/')
     # A path containing apostrophes requires additional Bash quoting; fail explicitly.
@@ -20,7 +21,7 @@ $dotnet = Join-Path $repo '.tools/dotnet/dotnet.exe'
 if ($LASTEXITCODE -ne 0) { throw 'Restore failed' }
 & $dotnet restore tests/SaruCast.Tests/SaruCast.Tests.csproj --locked-mode
 if ($LASTEXITCODE -ne 0) { throw 'Test restore failed' }
-& $dotnet run --project tests/SaruCast.Tests/SaruCast.Tests.csproj -c Release --no-restore
+& $dotnet run --project tests/SaruCast.Tests/SaruCast.Tests.csproj -c Release --no-restore "-p:OutputPath=$buildOutput/"
 if ($LASTEXITCODE -ne 0) { throw 'Tests failed' }
 New-Item -ItemType Directory -Force artifacts | Out-Null
 if ([IO.Path]::IsPathRooted($PublishDirectory)) { throw 'PublishDirectory must be relative to this repository.' }
@@ -30,7 +31,7 @@ $resolvedOutput = $output
 $artifactsRoot = [IO.Path]::GetFullPath((Join-Path $repo 'artifacts'))
 if (-not $resolvedOutput.StartsWith($artifactsRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Unsafe publish path: choose a directory below artifacts.' }
 if (Test-Path -LiteralPath $resolvedOutput) { Remove-Item -LiteralPath $resolvedOutput -Recurse -Force }
-& $dotnet publish src/SaruCast/SaruCast.csproj -c Release -r win-x64 --self-contained true --no-restore -p:PublishSingleFile=false -p:DebugType=None -p:DebugSymbols=false -o $output
+& $dotnet publish src/SaruCast/SaruCast.csproj -c Release -r win-x64 --self-contained true --no-restore "-p:OutputPath=$buildOutput/" -p:PublishSingleFile=false -p:DebugType=None -p:DebugSymbols=false -o $output
 if ($LASTEXITCODE -ne 0) { throw 'Publish failed' }
 New-Item -ItemType Directory -Force "$output/tools", "$output/licenses", "$output/sources", "$output/sources/ffmpeg-build", "$output/docs" | Out-Null
 Copy-Item .tools/ffmpeg/*.exe "$output/tools"

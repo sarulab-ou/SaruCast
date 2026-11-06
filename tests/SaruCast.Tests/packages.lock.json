@@ -2,6 +2,11 @@
   "version": 1,
   "dependencies": {
     "net10.0-windows7.0": {
+      "Concentus": {
+        "type": "Transitive",
+        "resolved": "2.2.2",
+        "contentHash": "2B9YmHPKO+k7YpAAnqmiXwiMJnfjfj1C868RszOll2iZWLnGTAiC1q21L/d7CvTan7T+hyqU8dR0Dcy3cpjVfQ=="
+      },
       "NAudio.Core": {
         "type": "Transitive",
         "resolved": "2.2.1",
@@ -18,6 +23,7 @@
       "sarucast": {
         "type": "Project",
         "dependencies": {
+          "Concentus": "[2.2.2, )",
           "NAudio.Wasapi": "[2.2.1, )"
         }
       }

@@ -1,11 +1,40 @@
 using System.Threading;
 using System.Windows.Threading;
+using System.Windows;
+using System.Windows.Controls;
 using SaruCast;
 
 // Regression of actual WPF Closing events, with an isolated, never-shown test window.
 // This does not automate or interact with any user's open application.
 static class ClosingChecks
 {
+    public static async Task RunConnectingAsync()
+    {
+        await using var receiver = new NativeReceiver(false, holdOffer: true);
+        var result = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var thread = new Thread(() =>
+        {
+            var dispatcher = Dispatcher.CurrentDispatcher;
+            SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(dispatcher));
+            dispatcher.UnhandledException += (_, e) => { e.Handled = true; result.TrySetException(e.Exception); dispatcher.BeginInvokeShutdown(DispatcherPriority.Send); };
+            dispatcher.BeginInvoke(async () =>
+            {
+                var window = new MainWindow();
+                window.Closed += (_, _) => { result.TrySetResult(); dispatcher.BeginInvokeShutdown(DispatcherPriority.Background); };
+                var televisions = (ComboBox)window.FindName("Televisions");
+                televisions.ItemsSource = new[] { new CastDevice("mock", "127.0.0.1", receiver.Port) }; televisions.SelectedIndex = 0;
+                ((TextBox)window.FindName("ManualIp")).Clear();
+                ((CheckBox)window.FindName("Sound")).IsChecked = false;
+                ((Button)window.FindName("StartStop")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                await receiver.Offered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                window.Close(); window.Close();
+            });
+            Dispatcher.Run();
+        }) { IsBackground = true };
+        thread.SetApartmentState(ApartmentState.STA); thread.Start();
+        await result.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        if (!thread.Join(1000) || !await receiver.Stopped.Task.WaitAsync(TimeSpan.FromSeconds(3))) throw new Exception("Connecting close did not stop receiver");
+    }
     public static async Task RunAsync(bool twice)
     {
         var result = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

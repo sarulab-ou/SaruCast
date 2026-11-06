@@ -16,8 +16,8 @@ cd "$build/ffmpeg-9.0.2"
  --enable-protocol=file,pipe --enable-indev=lavfi,gdigrab \
  --enable-filter=ddagrab,hwdownload,format,scale,aresample,aformat,anull,anullsrc,testsrc2,sine,null,signalstats,metadata \
  --enable-encoder=h264_mf,aac,pcm_s16le,wrapped_avframe --enable-decoder=pcm_s16le,rawvideo,h264,aac,wrapped_avframe \
- --enable-parser=h264,aac --enable-demuxer=pcm_s16le,rawvideo,mpegts,mov \
- --enable-muxer=hls,mpegts,mp4,adts,null --enable-bsf=h264_mp4toannexb,aac_adtstoasc \
+ --enable-parser=h264,aac --enable-demuxer=h264,pcm_s16le,rawvideo,mpegts,mov \
+ --enable-muxer=h264,hls,mpegts,mp4,adts,null --enable-bsf=h264_metadata,h264_mp4toannexb,aac_adtstoasc \
  --enable-mediafoundation --enable-d3d11va --extra-ldflags=-static
 make -j "${SARUCAST_JOBS:-8}"
 mkdir -p "$root/.tools/ffmpeg" "$root/artifacts/ffmpeg-build"

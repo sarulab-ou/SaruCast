@@ -1,29 +1,41 @@
 # SaruCast 実装方針
 
-2026-11-06。正式名称は **SaruCast**、起動ファイルは **SaruCast.exe**。
+2026-11-06。正式名称は **SaruCast**、起動ファイルは **SaruCast.exe**。0.1.2からCast Streamingを採用する。標準設定はユーザーの追加指示に合わせ、1080p上限・15fps・SDR。5／30fpsも選択可能。
 
-## 採用経路
+## 採用経路と調査
 
-公式の [libcast](https://chromium.googlesource.com/openscreen/+/refs/heads/main/cast/README.md)、[Streaming Session Protocol](https://chromium.googlesource.com/openscreen/+/refs/heads/main/cast/protocol/streaming_session_protocol.md)、[サンプル手順](https://chromium.googlesource.com/openscreen/+/HEAD/cast/docs/USING.md)、platform/BUILD.gn を確認した。調査時のrevisionを research/openscreen-revision.json に保存した。
+テレビ内蔵のミラーリングReceiver `0F5096E8` を起動し、`urn:x-cast:com.google.cast.webrtc` のOFFER/ANSWERでH.264映像と、音声ON時のみOpusを交渉する。映像・音声をAES-128-CTRでフレーム単位に暗号化し、RTP/RTCPを同じUDPソケットで直接転送する。テレビへの追加アプリ、カスタムReceiver、独自アカウントは不要。一般的なWebRTC接続としては扱わない。
 
-単体サンプルはGN/depot_toolsと別途メディアライブラリを必要とする。platform/BUILD.gn のstandalone実装はPOSIXのTLS・UDP・ソケット待受・タスク実行とLinux/macOSのNIC列挙を使用する。Windows向けにはそれらの実装、Winsockとの接続、エンコーダーフレームの投入、認証・RTP/RTCP・暗号化・再送と同期の移植検証が必要。OFFER送信だけで映像転送が成立する構造ではない。今回libcastを採用・同梱していない。直接Cast Streamingは未対応。
+[Open Screenの仕様](https://chromium.googlesource.com/openscreen/+/8b62b21479f1adb7663f182d97962b960c5c64ef/cast/protocol/streaming_session_protocol.md)、[暗号化](https://chromium.googlesource.com/openscreen/+/8b62b21479f1adb7663f182d97962b960c5c64ef/cast/streaming/impl/frame_crypto.cc)、[パケット化](https://chromium.googlesource.com/openscreen/+/8b62b21479f1adb7663f182d97962b960c5c64ef/cast/streaming/impl/rtp_packetizer.cc)を確認した。libcastのstandalone実装はPOSIXを前提とする部分があり、そのままWindowsでビルドできるとは扱わず、ライブラリ自体は組み込んでいない。
 
-初期版は [Default Media Receiver](https://developers.google.com/cast/docs/web_receiver)（CC1AD845）へH.264/AACのライブHLSを渡す**互換モード**。テレビ側の追加アプリ・独自Receiver・独自アカウント登録は不要。標準Receiverの起動に必要な通信までオフライン動作を保証しない。Googleの[対応メディア](https://developers.google.com/cast/docs/media)とCast制御の参照実装PyChromecastを確認。制御はTLS上のlength-prefixed protobuf＋JSON、CONNECT/heartbeat/LAUNCH/LOAD/MEDIA_STATUS/STOPを独立実装する。
+[Classic Chromecast caster](https://github.com/RikvdReijen/classic-chromecast-caster/tree/6cd9fdd1c7b1ca7d88f1023eff4f13a3032c5bab) の実ソースとApache-2.0ライセンスを確認し、RTP/RTCP、交渉モデル、Annex-B分割、Concentusアダプターのみを固定commitから取り込んだ。元のWinUIアプリ・キャプチャ・インストーラーは使用しない。`src/SaruCast/ThirdParty/ClassicCast/README.md`に由来を記録。暗号nonceとパケット形式はOpen Screenに加え、独立実装CastMirror/chromiacastの実ソースとも照合した。参照commitはdependencies.jsonに記録する。READMEの主張だけで採用せず、本機のビルド、自動テスト、テレビの受信通知、利用者による表示・音声確認を行った。
+
+従来のHLS/Default Media Receiver経路は製品から削除した。HTTPサーバーやセグメントファイルは作らず、HLSへ自動フォールバックしない。
 
 ## キャプチャ・エンコード
 
-WGCはWPFからD3D/WinRTのフレーム管理を別途実装する必要があるため、最初の版は許容された代替DXGI Desktop DuplicationをFFmpegのddagrabで使用する。DXGIでadapter/outputを列挙し正しい画面を指定。GDIは診断用の手動代替。カーソルあり。SDRのみ。HDRのトーンマッピング、保護コンテンツ、個別ウィンドウ共有は未対応。
+DXGI Desktop DuplicationをFFmpegのddagrabで使用する。DXGIのadapter/outputを列挙して選択した画面へ対応付ける。GDIは診断用の手動代替。カーソルあり。SDRのみ。WGC、HDRトーンマッピング、保護コンテンツの制限回避、個別ウィンドウ共有は対象外。
 
-FFmpeg 9.0.2の公式ソースを固定し、MinGWで必要最小構成をビルド。外部codecライブラリは使わず、Windows標準Media Foundationのh264_mf（GPUまたはソフトウェア）とFFmpegのAACを利用。NAudio.Wasapi 2.2.1で既定出力のWASAPI loopbackを取得。一定速度PCM出力で無音区間を補い、既定出力変更は検出して停止・再開始を促す。HLSは1秒セグメント、12個のローリングリスト、キーフレーム1秒、削除猶予10個。6個の初期セグメントを準備してから標準ReceiverへLOADを送り、開始位置を明示してライブ端での再バッファを防ぐ。TV表示遅延はHLSバッファに依存し未実測。1秒未満を保証しない。
+FFmpeg 9.0.2の公式ソースを固定してMinGWでビルドする。外部codecライブラリは不要。Windows標準Media Foundationのh264_mf（GPU／ソフトウェア）を使用し、baseline、Bフレームなし、1秒GOP、display_remoting、low_delayを設定する。Media Foundationが実際に出すlevelは機種によって異なり、交渉上限4.1以内を想定する。映像の目標ビットレートは15fpsで1080pが4Mbps、720pが2Mbps。5fpsはそれぞれ2／1Mbps、30fpsは6／3Mbps。
 
-## 配布要件（追加指示を優先）
+取得、Annex-B分割、音声処理、送信、制御の読み取りはバックグラウンドで実行し、WPFのUIスレッドを占有しない。stdoutのAnnex-BをAUD境界でアクセスユニットへ分割する。パイプの読み取り単位や一瞬の無出力をフレーム終端とみなさない。分割には最大1フレームの待ちがある。未分割バッファ上限8MiB、送信待ち4フレーム。通常の配信内容をファイルへ保存しない。
 
-第一希望は単一EXEだが、プロセス分離したFFmpegとランタイムの配置・更新・ライセンス資料をそのまま保持するため、今回は許可された**ZIP版のみ**を完成させる。自己展開の完全性・排他・クリーンアップを追加実装する負担を避け、起動の安定性を優先する。両方式の実装は不要。
+音声ON時のみNAudio.Wasapiで既定の再生出力をloopback取得する。ステレオ48kHz・16bit PCMに変換し、外部opus.dllの探索を無効化したConcentus 2.2.2で20ms・128kbpsのOpusへ変換。マイクは開かない。120msの有限PCMバッファと無音補充を使い、100msを超えるスケジューリング遅れでは古いPCMを捨てて時刻を進める。タイマーのまとめ発火時は期限に達したフレームを追い付かせる。既定出力変更や取得停止はエラーとして共有を止める。
 
-成果物は SaruCast-win-x64.zip。全体を展開し、最上位の SaruCast.exe を起動する。SelfContained=true、win-x64、WPF。PublishSingleFile=trueは指定しない。trimming/NativeAOTなし。DLLとランタイム、tools/ffmpeg.exe、ライセンス・対応FFmpegソースを同梱。利用者の.NET/VC++/FFmpeg/Bonjourの追加インストール、初回依存ダウンロードは不要。設定・ログ・HLS一時ファイルはユーザー領域。通常は非昇格。配布フォルダーへの書き込み不要。
+## 同期・再送と成功判定
 
-## ネットワーク・停止
+映像90kHz、音声48kHzの時刻を同じ単調時計へ対応付け、250msごとにRTCP Sender Reportを送る。音声時刻はサンプル数を基準とする。映像時刻はパイプ受信時刻から分割の1フレーム分を引く近似で、キャプチャ元の高精度PTSを引き継いだ計測ではない。厳密な音ずれと表示遅延は別途実測が必要。UDPパケットは1200byte以下、8個ごとに短い送信間隔を置く。映像と音声のcompound RTCPは各subpacketのSSRCで分ける。NACKに応じて暗号化済みの同一パケットを再送し、キャッシュは各stream最大16MiB・2秒で制限する。1秒ごとのキーフレームで映像の復帰を支える。高度な帯域推定・再交渉による適応画質制御は未実装。
 
-mDNS/DNS-SDを各IPv4 NICで照会、手動IPv4も許容。Cast接続で選ばれたローカルIPv4だけにHTTPサーバーをbind。HttpListenerのURL ACL/管理者権限を避けTcpListenerを使用。セッション毎の256bit乱数パス、TVの送信元IPだけ許可、固定ファイル名allowlist、ヘッダー長/時間/接続数制限。ログにURL秘密部分やTLSデータを書かない。停止でlistener/capture/audio/processを破棄し一時ファイル削除。自動再接続は0回とし画面共有を勝手に再開しない。ユーザーが再度開始する。
+OFFER成功だけで「配信中」にしない。3フレーム以上を送信し、異なるフレームの受信完了checkpointが2回以上進んだことを確認する。8秒間受信通知またはcheckpointが進まない場合は停止へ移る。受信完了は表示・再生そのものの証明ではなく、実機の目視・聴取と分けて記録する。
 
-Cast機器の自己署名TLSを許容する。Castのdevice-auth証明書チェーン検証は未実装であり、LAN内の接続先の暗号学的な真正性は保証しない。信頼できるLANで使うテスト版とする。
+Receiverへ提案する200msのtargetDelayや、受信確認までの時間は、画面表示の遅延値ではない。ユーザーは約1秒を許容すると指定し、15fps実画面について「表示され、遅れも許容範囲」と確認した。秒数の実測は別途必要。
+
+## 配布・停止・ネットワーク
+
+許可されたZIP版のみを作る。`SaruCast-win-x64.zip`を全体展開し、最上位の`SaruCast.exe`を起動する。SelfContained=true、win-x64、PublishSingleFile=false。trimming／NativeAOTなし。.NETランタイム、DLL、tools/FFmpeg、第三者通知、対応FFmpegソース・ビルド設定を同梱する。利用者の.NET/VC++/FFmpeg/Bonjour追加インストール、初回依存ダウンロードは不要。設定・ログはユーザー領域へ保存し、配布先へ書き込まない。
+
+mDNSを各IPv4 NICで照会し、手動IPv4も許可する。Cast TCP接続が選んだローカルIPv4へUDPソケットもbindし、選択したテレビのIP・回答ポートへconnectする。TCP制御は通常8009、メディアは回答された動的UDPポートと応答。HTTP待受はない。Firewallを全面的に無効化しない。暗号鍵やOFFER全体をログへ書かない。
+
+停止時はキャンセル、映像取得／音声取得／送信タスク終了、UDPとTLS、暗号オブジェクト、FFmpegを解放する。Windows Job Objectは親の異常終了時も子エンコーダーを終了する。後始末の例外があっても残りの資源を解放し、停止完了タスクは共有して終了連打に対応する。再Closeは元のWPF Closingイベントを抜けてから行う。再接続は利用者が明示的に開始し、共有を自動再開しない。
+
+Cast機器の自己署名TLSを許容する。device-auth証明書チェーン検証は未実装で、接続先の暗号学的な真正性を保証しない。信頼できるLANで使う試用版とする。

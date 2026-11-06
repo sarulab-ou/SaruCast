@@ -9,7 +9,7 @@ public static class Program
     {
         try
         {
-            if (args.Length > 0) return Diagnostics.RunAsync(args).GetAwaiter().GetResult();
+            if (args.Length > 0) return (args[0] == "--streaming-test" ? StreamingDiagnostics.RunAsync(args) : Diagnostics.RunAsync(args)).GetAwaiter().GetResult();
             var app = new Application();
             app.DispatcherUnhandledException += (_, e) => { Log.Error("Unhandled UI error", e.Exception); MessageBox.Show("処理を続行できません。診断ログを確認して再起動してください。", "SaruCast"); e.Handled = true; app.Shutdown(1); };
             return app.Run(new MainWindow());

@@ -15,16 +15,17 @@
    <Button x:Name="StartStop" Content="キャスト開始" FontSize="18" FontWeight="SemiBold" Background="#1766D2" Foreground="White" BorderThickness="0" Padding="16,14" Margin="0" Click="StartStop_Click"/>
    <TextBlock x:Name="State" Text="準備中…" TextWrapping="Wrap" Foreground="#29415C" Margin="0,15,0,0" MinHeight="40"/>
   </StackPanel></Border>
-  <TextBlock Text="互換モード · テレビへの表示には数秒以上の遅れが生じます。" TextWrapping="Wrap" FontSize="12" Foreground="#627183" Margin="2,13,2,13"/>
+  <TextBlock Text="Cast Streaming · 表示の遅れはテレビとネットワークにより変わります。" TextWrapping="Wrap" FontSize="12" Foreground="#627183" Margin="2,13,2,13"/>
   <Expander x:Name="Advanced" Header="詳細設定"><StackPanel Margin="4,12,4,0">
    <TextBlock Text="テレビのIPv4アドレス（一覧にないとき）"/>
    <DockPanel Margin="0,5,0,8"><Button x:Name="Probe" Content="接続確認" DockPanel.Dock="Right" Click="Probe_Click"/><TextBox x:Name="ManualIp" Padding="8" VerticalContentAlignment="Center" AutomationProperties.Name="テレビのIPv4アドレス"/></DockPanel>
-   <TextBlock Text="画質"/><ComboBox x:Name="Quality" SelectedIndex="0"><ComboBoxItem Content="1080p / 30fps"/><ComboBoxItem Content="720p / 30fps"/></ComboBox>
+   <TextBlock Text="画質"/><ComboBox x:Name="Quality" SelectedIndex="0"><ComboBoxItem Content="1080p"/><ComboBoxItem Content="720p"/></ComboBox>
+   <TextBlock Text="フレームレート"/><ComboBox x:Name="FrameRate" SelectedIndex="0" AutomationProperties.Name="フレームレート"><ComboBoxItem Content="5fps（省負荷）"/><ComboBoxItem Content="15fps"/><ComboBoxItem Content="30fps"/></ComboBox>
    <CheckBox x:Name="Hardware" Content="GPUで映像をエンコード" IsChecked="True" Margin="0,0,0,10"/>
    <CheckBox x:Name="Gdi" Content="画面取得をGDIに変更（診断用）" Margin="0,0,0,10"/>
    <TextBlock Text="SDR画面に対応。HDR表示はWindows側でオフにしてください。" TextWrapping="Wrap" FontSize="12"/>
    <WrapPanel Margin="0,10,0,0"><Button Content="診断ログ" Click="Logs_Click"/><Button Content="ライセンス" Click="Licenses_Click"/></WrapPanel>
   </StackPanel></Expander>
-  <TextBlock Text="0.1.1 · 未署名テスト版 / 互換モード" FontSize="11" Foreground="#6B7788" Margin="2,18,2,0"/>
+  <TextBlock Text="0.1.2 · 未署名テスト版 / Cast Streaming" FontSize="11" Foreground="#6B7788" Margin="2,18,2,0"/>
  </StackPanel></ScrollViewer>
 </Window>

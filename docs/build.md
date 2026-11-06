@@ -1,58 +1,71 @@
 # 再現手順
 
-Windows PowerShell、WSL Ubuntu、既存のmake/GCC/MinGW-w64クロスコンパイラが開発に必要。
-実行利用者には不要。SDKはシステムインストールせず.toolsへ取得する。
+Windows PowerShell、WSL Ubuntu、既存のmake/GCC/MinGW-w64クロスコンパイラが開発に必要。実行利用者には不要。SDKはシステムへインストールせず.toolsへ取得する。
 
 ```powershell
 ./scripts/bootstrap.ps1
-# 初回のみ、またはFFmpeg構成を変更したとき。内部でWSLを呼ぶ。
+# 初回、またはFFmpeg構成を変更したとき。内部でWSLを呼ぶ。
 ./scripts/publish.ps1 -RebuildFfmpeg
 # 次回以降
 ./scripts/publish.ps1
-# 起動中の配布フォルダーを維持して、別の場所へリリース用出力を作る場合
-./scripts/publish.ps1 -PublishDirectory artifacts/release-v0.1.1
+# 起動中の配布フォルダーを保って、別の場所へ発行する場合
+./scripts/publish.ps1 -PublishDirectory artifacts/release-v0.1.2
 ```
 
-WSLだけでFFmpegをビルドするときは対象ディレクトリへ明示的に移動する。
+WSLでFFmpegだけをビルドするときも明示的に移動する。
 
 ```powershell
 wsl bash -lc "cd '/mnt/c/Users/saru/Desktop/2026/SaruCast' && bash scripts/build-ffmpeg.sh"
 ```
 
-全依存はdependencies.json、NuGetは各packages.lock.jsonで固定。
-ソースのSHA256とSDKのSHA512を検証する。依存ネットワーク取得は**開発ビルド時だけ**。
-発行は.NET 10 LTS / win-x64 / SelfContained=true / PublishSingleFile=false。
-RuntimeFrameworkVersion=10.0.14を指定し、WPFのtrimming・NativeAOTを使用しない。
-外部PATH上のFFmpegを参照しない。FFmpegはLGPL構成、外部codecライブラリなし、
-MinGWランタイムは静的リンク。H.264はWindows標準Media Foundation、AACはFFmpeg内蔵。
-完全な対応ソースとビルド設定をZIP内sourcesへ含める。大きな生成物はGit対象外。
-初回のビルド環境はWSL Ubuntu / MinGW-w64 GCC 13-win32。コンパイラ差によりバイナリの完全一致は保証しない。
+全依存はdependencies.json、NuGetは各packages.lock.jsonで固定。取り込んだClassicCastのソースはGitで管理し、固定commit・変更箇所・Apache-2.0通知を同梱する。NAudioとConcentusを含むNuGetパッケージはlocked-modeで復元する。FFmpegソースSHA256とSDK SHA512を検証し、ネットワークからの依存取得は**開発ビルド時のみ**行う。
 
-出力はartifacts/SaruCast-win-x64.zip。ZIPの最上位にSaruCast.exeを置き、発行出力を全て維持。
-artifacts/publishは生成物として再生成する。受け入れは「ZIP全体を展開して最上位EXEを起動」
-で行い、EXE単体での起動をZIP版の条件にしない。
+発行は.NET 10 LTS / win-x64 / SelfContained=true / PublishSingleFile=false。RuntimeFrameworkVersion=10.0.14を指定し、WPFのtrimming・NativeAOTを使用しない。外部PATHのFFmpegへ依存しない。FFmpegはLGPL構成、外部codecライブラリなし、MinGWランタイムは静的リンク。H.264はWindows標準Media Foundation、Opusは管理コードのConcentus。対応するFFmpegソース全体とビルド設定をZIPのsourcesへ含める。生成物はGit対象外。コンパイラ差によるバイナリの完全一致は保証しない。
 
-開発時の単体検証：
+成果物はartifacts/SaruCast-win-x64.zipと同名の.zip.sha256。ZIPの最上位にSaruCast.exeがあり、DLL、ランタイム、tools、licenses、sources、docsなどの発行出力をすべて維持する。受け入れは「ZIP全体を展開して最上位EXEを起動」で行う。EXEだけを抜き出すことをZIP版の条件にしない。自己展開と利用者側の初回依存ダウンロードは行わない。
+
+## 自動検証
 
 ```powershell
 $env:PYTHONUTF8='1'; $env:PYTHONIOENCODING='utf-8'; $env:CI='true'
 ./.tools/dotnet/dotnet.exe run --project tests/SaruCast.Tests/SaruCast.Tests.csproj -c Release
-# 実画面と音声の取得を明示的に開始し、終了時に一時メディアを消す。
-./artifacts/publish/SaruCast.exe --diagnose "$PWD/artifacts/capture.json" --capture-seconds 10 --audio --software
+# 起動中の開発ビルドと出力を分けて検証する場合
+./.tools/dotnet/dotnet.exe run --project tests/SaruCast.Tests/SaruCast.Tests.csproj -c Release '-p:OutputPath=C:\Users\saru\Desktop\2026\SaruCast\artifacts\test-build\'
+# ランタイム、画面列挙、同梱FFmpegの存在だけ確認。取得・配信は始めない。
+./artifacts/publish/SaruCast.exe --diagnose "$PWD/artifacts/startup.json"
 ```
 
---diagnoseの追加引数：--discover、--720p、--gdi、--pattern、--probe-ip <IPv4>。
---patternはテスト映像と440Hz音声を生成する。実画面・実音声の検証には含めない。
---capture-secondsと--cast-ip <IPv4>を併用すると、明示したテレビへ実際に配信する。
---pattern併用時の音はテレビだけへ送り、PCの音声取得・PCでの発音はしない。
---toneはPCでテスト音を鳴らす。--audioと併用してWASAPI取得を検証する用途に限る。
-自動テストは模擬TLS Cast受信機を使うため、テレビ実機の成功とは別。
+自動テストのTLS/UDP模擬Receiverはテレビの表示・音声確認とは別。WPF終了試験は利用者のウィンドウを操作せず、表示しないテスト専用ウィンドウを使う。
 
-署名証明書がある場合だけ：
+## 実機へ明示的に配信する診断
+
+以下は指定したテレビへ実際に送信する。`192.168.0.128`は検証例で、使用環境のテレビIPv4へ置き換える。
+
+```powershell
+# Cast Streamingのテスト模様＋テレビだけに確認音（PCでは発音しない）
+./artifacts/publish/SaruCast.exe --streaming-test "$PWD/artifacts/pattern.json" --ip 192.168.0.128 --fps 15 --seconds 60 --pattern --audio
+# 実画面とPCの既定出力音声。1080p上限。最大30分。
+./artifacts/publish/SaruCast.exe --streaming-test "$PWD/artifacts/desktop.json" --ip 192.168.0.128 --fps 15 --seconds 1800 --1080p --audio
+# 音声オフ、720p、ソフトウェアH.264
+./artifacts/publish/SaruCast.exe --streaming-test "$PWD/artifacts/video-only.json" --ip 192.168.0.128 --fps 15 --seconds 20 --software
+```
+
+--fpsは5／15／30、標準15。--1080p省略時は720p上限。--audio省略時は映像だけで、音声デバイスを開かない。--softwareでGPUエンコードをオフ、--gdiで取得方式を変更。--patternは実画面取得の検証に含めない。診断のJSONは10秒ごとのCPU・メモリ・受信通知を記録し、正常終了時にsuccess=trueを追記する。televisionObservedPlaybackVerifiedは常にfalseで、物理的な表示・音声確認は利用者報告として検証記録へ別に残す。
+
+## ZIP展開後の検証
+
+空白入りの新しい検証フォルダーへ全展開し、同梱ハッシュ、外部.NETを参照しない起動、GPU／ソフトウェアH.264の4秒・60フレームの復号と、復号画像が全面黒ではないことを検査する。クリーンな別PCでの確認とは区別する。
+
+```powershell
+./scripts/verify-package.ps1 -DestinationDirectory 'artifacts/SaruCast 0.1.2 package check'
+```
+
+## 署名
+
+使用できる証明書がある場合のみ：
 
 ```powershell
 ./scripts/publish.ps1 -CertificateThumbprint <CurrentUser/Myの証明書thumbprint>
 ```
 
-署名は最終SaruCast.exeへ実施し、タイムスタンプ・署名状態を確認した後にZIPを作る。
-省略時は未署名のテスト版。署名付き配布の工程は今回未実行。
+最終EXEを署名し、タイムスタンプと署名状態を確認してからZIPを作る。省略時は未署名の試用版。今回署名は未実行。

@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <AssemblyName>SaruCast</AssemblyName>
     <Product>SaruCast</Product>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
     <RuntimeFrameworkVersion>10.0.14</RuntimeFrameworkVersion>
@@ -17,5 +17,5 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-  <ItemGroup><PackageReference Include="NAudio.Wasapi" Version="2.2.1"/></ItemGroup>
+  <ItemGroup><PackageReference Include="NAudio.Wasapi" Version="2.2.1"/><PackageReference Include="Concentus" Version="2.2.2"/></ItemGroup>
 </Project>

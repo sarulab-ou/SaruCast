@@ -22,6 +22,8 @@ public sealed class Settings
     public bool Hardware { get; set; } = true;
     public bool Gdi { get; set; }
     public int Height { get; set; } = 1080;
+    public int FrameRate { get; set; } = 15;
+    public static int NormalizeFrameRate(int value) => value is 5 or 15 or 30 ? value : 15;
     public static Settings Load()
     {
         try { return JsonSerializer.Deserialize<Settings>(File.ReadAllText(Path.Combine(Paths.Root, "settings.json"))) ?? new(); }

@@ -17,6 +17,20 @@
   "managed": {
     "NAudio.Wasapi": "2.2.1",
     "NAudio.Core": "2.2.1",
-    "hashes": "src/SaruCast/packages.lock.json"
+    "hashes": "src/SaruCast/packages.lock.json",
+    "Concentus": "2.2.2"
+  },
+  "castStreaming": {
+    "implementation": "Classic Chromecast caster (selected source components)",
+    "repository": "https://github.com/RikvdReijen/classic-chromecast-caster",
+    "commit": "6cd9fdd1c7b1ca7d88f1023eff4f13a3032c5bab",
+    "license": "Apache-2.0",
+    "vendoredDirectory": "src/SaruCast/ThirdParty/ClassicCast",
+    "specificationRepository": "https://github.com/chromium/openscreen",
+    "specificationCommit": "8b62b21479f1adb7663f182d97962b960c5c64ef",
+    "independentReferences": {
+      "chromiacast": "65a398c7fe1b0b65c5fe9e3455f047eae5b50631",
+      "CastMirror": "726b2489aa5d225e9e4243734a01ed3240014bbc"
+    }
   }
 }

@@ -1,14 +1,28 @@
-SaruCast 0.1.1 — 未署名テスト版
+SaruCast 0.1.2 — 未署名テスト版 / Cast Streaming
 
 SaruCast本体: MIT License (SaruCast-LICENSE.txt)
 NAudio.Wasapi / NAudio.Core 2.2.1: MIT (NAudio-LICENSE.txt)
+Concentus 2.2.2: BSD系の同梱条件 (Concentus-LICENSE.txt)
 .NET / Windows Desktop runtime 10.0.14: 各同梱ライセンス・通知を参照。
+
+Classic Chromecast casterの選択した実装ソース: Apache License 2.0
+Copyright 2026 Rik van der Reijen (Rik Realization)
+https://github.com/RikvdReijen/classic-chromecast-caster
+採用commit: 6cd9fdd1c7b1ca7d88f1023eff4f13a3032c5bab
+ClassicCast-LICENSE.txt / ClassicCast-NOTICE.txt を参照。
+RTP/RTCP、交渉モデル、Annex-B解析、Opusアダプターのみを使用。
+SaruCast側でNIC指定、1200byteパケット、compound RTCPの分離、
+送信ペーシング、再送キャッシュの上限・期限、WPF用import、
+外部opus.dllを探索せず管理コードを使う設定を変更。
+上流のWinUI UI、キャプチャ実装、インストーラーは含めていません。
+ClassicCast-NOTICE.txtは上流通知の原文であり、その依存一覧は
+上流アプリ全体についての記載です。本配布の構成は本通知とdependencies.jsonに従います。
 
 FFmpeg 9.0.2: LGPL v2.1 or later。この配布物の構成はLGPL。
 外部ライブラリ、GPL/nonfreeコーデックは使用していません。
 tools/ffmpeg.exe / ffprobe.exe はSaruCastから分離したプログラムです。
 それぞれの起動・置換・解析・改変を制限しません。WindowsのMedia
-Foundationを呼び出してH.264をエンコードし、FFmpegのAACを使用します。
+Foundationを呼び出してH.264をエンコードします。
 Windows標準機能のコーデック特許権等を本通知が許諾するものではありません。
 
 対応する無改変FFmpegソース全体をsources/ffmpeg-9.0.2.tar.xzに同梱し、
@@ -18,8 +32,9 @@ FFmpeg: https://ffmpeg.org/   ソース: https://ffmpeg.org/releases/ffmpeg-9.0.
 MinGW-w64 GCC 13の静的リンクランタイム: COPYING.RUNTIME.txt、COPYING3.txt、
 mingw-w64-COPYING.txtを参照。GCC Runtime Library Exception付きです。
 
-Open Screen/libcastとPyChromecastは仕様・相互運用の調査に参照しましたが、
-これらのライブラリや実装コードをSaruCastに組み込んでいません。
+Open Screen/libcast、CastMirror、chromiacast、PyChromecastは仕様・
+相互運用の調査に参照しましたが、それらのライブラリ・実装コードは
+組み込んでいません。ClassicCast由来の取り込みは上記に区別しています。
 ソースツリーdocs/researchに保存したOpen Screenの調査資料には、
 OpenScreen-LICENSE.txtのBSDライセンスが適用されます。
 

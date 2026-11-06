@@ -23,6 +23,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         Sound.IsChecked = settings.Audio; Hardware.IsChecked = settings.Hardware; Gdi.IsChecked = settings.Gdi;
         Quality.SelectedIndex = settings.Height <= 720 ? 1 : 0;
+        FrameRate.SelectedIndex = Settings.NormalizeFrameRate(settings.FrameRate) switch { 15 => 1, 30 => 2, _ => 0 };
         ManualIp.Text = settings.ManualTelevision;
         Screens.ItemsSource = Displays.List();
         Screens.SelectedItem = Screens.Items.Cast<DisplayInfo>().FirstOrDefault(d => d.DeviceName == settings.Display) ?? Screens.Items.Cast<DisplayInfo>().FirstOrDefault();
@@ -55,6 +56,7 @@ public partial class MainWindow : Window
     {
         settings.Audio = Sound.IsChecked == true; settings.Hardware = Hardware.IsChecked == true; settings.Gdi = Gdi.IsChecked == true;
         settings.Height = Quality.SelectedIndex == 1 ? 720 : 1080;
+        settings.FrameRate = FrameRate.SelectedIndex switch { 1 => 15, 2 => 30, _ => 5 };
         settings.ManualTelevision = ManualIp.Text.Trim();
         if (Screens.SelectedItem is DisplayInfo d) settings.Display = d.DeviceName;
     }
