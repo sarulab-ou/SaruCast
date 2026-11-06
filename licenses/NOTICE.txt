@@ -1,0 +1,26 @@
+SaruCast 0.1.1 — 未署名テスト版
+
+SaruCast本体: MIT License (SaruCast-LICENSE.txt)
+NAudio.Wasapi / NAudio.Core 2.2.1: MIT (NAudio-LICENSE.txt)
+.NET / Windows Desktop runtime 10.0.14: 各同梱ライセンス・通知を参照。
+
+FFmpeg 9.0.2: LGPL v2.1 or later。この配布物の構成はLGPL。
+外部ライブラリ、GPL/nonfreeコーデックは使用していません。
+tools/ffmpeg.exe / ffprobe.exe はSaruCastから分離したプログラムです。
+それぞれの起動・置換・解析・改変を制限しません。WindowsのMedia
+Foundationを呼び出してH.264をエンコードし、FFmpegのAACを使用します。
+Windows標準機能のコーデック特許権等を本通知が許諾するものではありません。
+
+対応する無改変FFmpegソース全体をsources/ffmpeg-9.0.2.tar.xzに同梱し、
+sources/build-ffmpeg.shに構成・ビルド手順、sources/ffmpeg-buildに設定を同梱。
+ソースは実行時には使いません。追加のダウンロードやインストールは不要です。
+FFmpeg: https://ffmpeg.org/   ソース: https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz
+MinGW-w64 GCC 13の静的リンクランタイム: COPYING.RUNTIME.txt、COPYING3.txt、
+mingw-w64-COPYING.txtを参照。GCC Runtime Library Exception付きです。
+
+Open Screen/libcastとPyChromecastは仕様・相互運用の調査に参照しましたが、
+これらのライブラリや実装コードをSaruCastに組み込んでいません。
+ソースツリーdocs/researchに保存したOpen Screenの調査資料には、
+OpenScreen-LICENSE.txtのBSDライセンスが適用されます。
+
+アプリの「詳細設定 → ライセンス」で同梱する全txt通知を閲覧できます。

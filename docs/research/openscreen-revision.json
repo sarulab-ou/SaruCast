@@ -1,0 +1,49 @@
+)]}'
+{
+  "commit": "8b62b21479f1adb7663f182d97962b960c5c64ef",
+  "tree": "f918ce672090781dd7696af5132138ed75065cb6",
+  "parents": [
+    "8ec3d93c2ea7736e915214cb58316b1bfd9bac8e"
+  ],
+  "author": {
+    "name": "chromium-autoroll@skia-public.iam.gserviceaccount.com",
+    "email": "chromium-autoroll@skia-public.iam.gserviceaccount.com",
+    "time": "Fri Nov 06 00:01:02 2026"
+  },
+  "committer": {
+    "name": "openscreen-scoped@luci-project-accounts.iam.gserviceaccount.com",
+    "email": "openscreen-scoped@luci-project-accounts.iam.gserviceaccount.com",
+    "time": "Fri Nov 06 01:40:01 2026"
+  },
+  "message": "Roll Perfetto from 3a3a4eb4873f to 9aa9e2933f8a (2 revisions)\n\nhttps://chromium.googlesource.com/external/github.com/google/perfetto.git/+log/3a3a4eb4873f..9aa9e2933f8a\n\n2026-11-05 sashwinbalaji@google.com perfetto: Extract SequenceTable from TraceBufferV2 (#8491)\n2026-11-05 sashwinbalaji@google.com perfetto: Add block arena for short-lived data (#8489)\n\nIf this roll has caused a breakage, revert this CL and set the roller\nto dry run mode using the controls here:\nhttps://autoroll.skia.org/r/perfetto-openscreen\nPlease CC jophba@chromium.org,mfoltz@chromium.org on the revert to ensure that a human\nis aware of the problem.\n\nTo file a bug in Perfetto: https://github.com/google/perfetto/issues/new\nTo file a bug in Open Screen: https://issuetracker.google.com/issues/new?component\u003d861667\u0026template\u003d1809281\n\nTo report a problem with the AutoRoller itself, please file a bug:\nhttps://issues.skia.org/issues/new?component\u003d1389291\u0026template\u003d1850622\n\nDocumentation for the AutoRoller is here:\nhttps://skia.googlesource.com/buildbot/+doc/main/autoroll/README.md\n\nBug: None\nChange-Id: Id51fa6dfe5926908f6b5b53fb266e9c31f2a5423\nReviewed-on: https://chromium-review.googlesource.com/c/openscreen/+/8748708\nBot-Commit: chromium-autoroll@skia-public.iam.gserviceaccount.com \u003cchromium-autoroll@skia-public.iam.gserviceaccount.com\u003e\nCommit-Queue: chromium-autoroll@skia-public.iam.gserviceaccount.com \u003cchromium-autoroll@skia-public.iam.gserviceaccount.com\u003e\n",
+  "tree_diff": [
+    {
+      "type": "modify",
+      "old_id": "b4cd7c2022f97ebb36c32bae652597b778ca8232",
+      "old_mode": 33188,
+      "old_path": "DEPS",
+      "new_id": "e1dd6429827c8d475977edec8fc35f4c53ec2d35",
+      "new_mode": 33188,
+      "new_path": "DEPS"
+    },
+    {
+      "type": "modify",
+      "old_id": "06541bdb25c81ffb36559483301dbd2e2e0a06fc",
+      "old_mode": 33188,
+      "old_path": "third_party/perfetto/README.chromium",
+      "new_id": "654ff0ca7be0502a6896b897ef6eb06b6d32d98d",
+      "new_mode": 33188,
+      "new_path": "third_party/perfetto/README.chromium"
+    },
+    {
+      "type": "modify",
+      "old_id": "3a3a4eb4873f110a04099ef855cbcb4d09517bed",
+      "old_mode": 57344,
+      "old_path": "third_party/perfetto/src",
+      "new_id": "9aa9e2933f8a935bee40f959be05b3ad02d4c04f",
+      "new_mode": 57344,
+      "new_path": "third_party/perfetto/src"
+    }
+  ]
+}
+

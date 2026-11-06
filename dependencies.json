@@ -1,0 +1,22 @@
+{
+  "sdk": {
+    "version": "10.0.403",
+    "url": "https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.403/dotnet-sdk-10.0.403-win-x64.zip",
+    "sha512": "7a114c318fa7f1d9822991b534b2814d0e78386ceda816b371f5141acefe741d87ccb606ede06cadac8f9ac5070e32b708a67bbd1619ff5e5a7858a27874ef48"
+  },
+  "runtime": "10.0.14",
+  "ffmpeg": {
+    "version": "9.0.2",
+    "url": "https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz",
+    "sha256": "8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e",
+    "configuration": "scripts/build-ffmpeg.sh",
+    "externalLibraries": [],
+    "license": "LGPL-2.1-or-later",
+    "compiler": "WSL Ubuntu MinGW-w64 GCC 13 (win32 threads, static runtime)"
+  },
+  "managed": {
+    "NAudio.Wasapi": "2.2.1",
+    "NAudio.Core": "2.2.1",
+    "hashes": "src/SaruCast/packages.lock.json"
+  }
+}
