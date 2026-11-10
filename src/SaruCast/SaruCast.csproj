@@ -15,7 +15,9 @@
     <PublishTrimmed>false</PublishTrimmed>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets/SaruCast.ico</ApplicationIcon>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup><PackageReference Include="NAudio.Wasapi" Version="2.2.1"/><PackageReference Include="Concentus" Version="2.2.2"/></ItemGroup>
+  <ItemGroup><Resource Include="Assets/SaruCast.ico"/></ItemGroup>
 </Project>

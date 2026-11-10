@@ -77,6 +77,12 @@ $env:PYTHONUTF8='1'; $env:PYTHONIOENCODING='utf-8'; $env:CI='true'
 ./scripts/verify-package.ps1 -DestinationDirectory 'artifacts/SaruCast 0.1.3 package check'
 ```
 
+## アイコン
+
+`src/SaruCast/Assets/SaruCast.ico`は、青・赤・黄・緑で「Cast」と記したアプリアイコン。16／24／32／48／64／128／256pxを含む。EXEとWPFウィンドウに埋め込み、NSISのセットアップ／アンインストーラーにも同じICOを使う。ショートカットはアプリEXEのアイコンを参照する。
+
+ICOを再生成する場合は、WindowsのSegoe UIとSystem.Drawingを使って`./scripts/build-icon.ps1`を実行する。プレビューは`artifacts/SaruCast-icon-preview.png`。ICOはソース管理するため、通常のビルドや利用者のPCでは生成処理は不要。
+
 ## 署名
 
 使用できる証明書がある場合のみ：

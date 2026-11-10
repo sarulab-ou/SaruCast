@@ -55,7 +55,7 @@ foreach($dir in Get-ChildItem -LiteralPath $payload -Recurse -Directory | Sort-O
     $deletes += 'RMDir "$INSTDIR\'+$dir.FullName.Substring($payload.Length+1)+'"'
 }
 $deletes | Set-Content artifacts/installer/uninstall-files.nsh -Encoding utf8
-wsl bash -lc "cd '$linuxRoot' && NSISDIR='$linuxRoot/.tools/nsis-root/usr/share/nsis' '.tools/nsis-root/usr/bin/makensis' -V2 '-DPRODUCT_VERSION=$version' '-DPAYLOAD_DIR=$linuxRoot/artifacts/installer/payload' '-DOUTPUT_FILE=$linuxRoot/artifacts/SaruCast-Setup-win-x64.exe' '-DUNINSTALL_FILES=$linuxRoot/artifacts/installer/uninstall-files.nsh' installer/SaruCast.nsi"
+wsl bash -lc "cd '$linuxRoot' && NSISDIR='$linuxRoot/.tools/nsis-root/usr/share/nsis' '.tools/nsis-root/usr/bin/makensis' -V2 '-DPRODUCT_VERSION=$version' '-DAPP_ICON=$linuxRoot/src/SaruCast/Assets/SaruCast.ico' '-DPAYLOAD_DIR=$linuxRoot/artifacts/installer/payload' '-DOUTPUT_FILE=$linuxRoot/artifacts/SaruCast-Setup-win-x64.exe' '-DUNINSTALL_FILES=$linuxRoot/artifacts/installer/uninstall-files.nsh' installer/SaruCast.nsi"
 if($LASTEXITCODE -ne 0){throw 'Installer compilation failed.'}
 $output=Join-Path $repo 'artifacts/SaruCast-Setup-win-x64.exe'
 if($CertificateThumbprint){

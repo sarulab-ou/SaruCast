@@ -14,6 +14,8 @@ RequestExecutionLevel user
 SetCompressor /SOLID lzma
 SetOverwrite on
 BrandingText "SaruCast"
+!define MUI_ICON "${APP_ICON}"
+!define MUI_UNICON "${APP_ICON}"
 VIProductVersion "${PRODUCT_VERSION}.0"
 VIAddVersionKey /LANG=1041 "ProductName" "SaruCast"
 VIAddVersionKey /LANG=1041 "FileDescription" "SaruCast セットアップ（Windows x64）"
