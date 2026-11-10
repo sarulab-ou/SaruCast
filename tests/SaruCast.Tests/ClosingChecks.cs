@@ -20,6 +20,11 @@ static class ClosingChecks
             dispatcher.BeginInvoke(async () =>
             {
                 var window = new MainWindow();
+                for (int i = 0; i < 120; i++) window.AppendActivity($"buffer clear {i}");
+                string text = ((TextBox)window.FindName("ActivityLog")).Text;
+                if (text.Split('\n', StringSplitOptions.RemoveEmptyEntries).Length != 100 || !text.Contains("buffer clear 119")
+                    || text.Contains("buffer clear 19\n") || !((Expander)window.FindName("ActivityPanel")).IsExpanded)
+                    throw new Exception("Visible activity log must expand and retain latest 100 entries");
                 window.Closed += (_, _) => { result.TrySetResult(); dispatcher.BeginInvokeShutdown(DispatcherPriority.Background); };
                 var televisions = (ComboBox)window.FindName("Televisions");
                 televisions.ItemsSource = new[] { new CastDevice("mock", "127.0.0.1", receiver.Port) }; televisions.SelectedIndex = 0;

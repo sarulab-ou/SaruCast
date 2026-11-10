@@ -8,10 +8,12 @@ public sealed class CastSession : IAsyncDisposable
     private Task? monitor, disposeTask;
     public event Action<string>? Status;
     public event Action<string>? Disconnected;
+    public event Action<string>? Activity;
     public async Task StartAsync(CastDevice television, DisplayInfo display, Settings settings, CancellationToken ct)
     {
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct, stop.Token);
         streaming.Status += value => Status?.Invoke(value);
+        streaming.Activity += value => Activity?.Invoke(value);
         await streaming.StartAsync(television, display, settings, linked.Token);
         monitor = MonitorAsync();
     }

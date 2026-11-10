@@ -12,7 +12,12 @@ public static class StreamingDiagnostics
         string output = Path.GetFullPath(args[1]); Directory.CreateDirectory(Path.GetDirectoryName(output)!);
         string? Arg(string name) { int i = Array.IndexOf(args, name); return i >= 0 && i + 1 < args.Length ? args[i + 1] : null; }
         var result = new Dictionary<string, object?> { ["utc"] = DateTimeOffset.UtcNow, ["transport"] = "Cast Streaming", ["televisionObservedPlaybackVerified"] = false };
-        Task Write() => File.WriteAllTextAsync(output, JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }));
+        List<object> activity = [];
+        Task Write()
+        {
+            lock (activity) result["activity"] = activity.ToArray();
+            return File.WriteAllTextAsync(output, JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }));
+        }
         int exit = 0;
         try
         {
@@ -22,6 +27,7 @@ public static class StreamingDiagnostics
             var settings = new Settings { Audio = args.Contains("--audio"), Hardware = !args.Contains("--software"), Gdi = args.Contains("--gdi"), FrameRate = fps, Height = args.Contains("--1080p") ? 1080 : 720 };
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(seconds + 60));
             await using var session = new StreamingSession();
+            session.Activity += message => { lock (activity) activity.Add(new { utc = DateTimeOffset.UtcNow, message }); };
             var clock = Stopwatch.StartNew();
             await session.StartAsync(new("診断用接続先", Arg("--ip") ?? throw new ArgumentException("--ip is required")), Displays.List().First(), settings, timeout.Token, args.Contains("--pattern"));
             result["firstMediaAcknowledgedAfterSeconds"] = clock.Elapsed.TotalSeconds;
@@ -41,6 +47,7 @@ public static class StreamingDiagnostics
                 result["retransmittedPackets"] = session.RetransmittedPackets;
                 result["audioFramesSent"] = session.AudioFramesSent; result["audioReceiverFeedback"] = session.AudioFeedbackCount;
                 result["audioSkippedFrames"] = session.AudioSkippedFrames; result["audioPeakPcm16"] = session.AudioPeakPcm16;
+                result["bufferResets"] = session.BufferResetCount; result["droppedVideoFrames"] = session.DroppedVideoFrames;
                 result["elapsedSeconds"] = interval.Elapsed.TotalSeconds;
                 samples.Add(new { seconds = interval.Elapsed.TotalSeconds, encoderWorkingSet = metrics.WorkingSet, appWorkingSet = self.WorkingSet64, framesSent = session.FramesSent, audioFramesSent = session.AudioFramesSent });
                 result["encoderCpuPercentTotalMachine"] = 100 * (metrics.CpuSeconds - before.CpuSeconds) / interval.Elapsed.TotalSeconds / Environment.ProcessorCount;

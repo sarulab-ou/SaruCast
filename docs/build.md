@@ -11,7 +11,7 @@ Windows PowerShell、WSL Ubuntu、既存のmake/GCC/MinGW-w64クロスコンパ�
 # 次回以降
 ./scripts/publish.ps1
 # 起動中の配布フォルダーを保って、別の場所へ発行する場合
-./scripts/publish.ps1 -PublishDirectory artifacts/release-v0.1.2
+./scripts/publish.ps1 -PublishDirectory artifacts/release-v0.1.3
 ```
 
 WSLでFFmpegだけをビルドするときも明示的に移動する。
@@ -21,6 +21,21 @@ wsl bash -lc "cd '/mnt/c/Users/saru/Desktop/2026/SaruCast' && bash scripts/build
 ```
 
 全依存はdependencies.json、NuGetは各packages.lock.jsonで固定。取り込んだClassicCastのソースはGitで管理し、固定commit・変更箇所・Apache-2.0通知を同梱する。NAudioとConcentusを含むNuGetパッケージはlocked-modeで復元する。FFmpegソースSHA256とSDK SHA512を検証し、ネットワークからの依存取得は**開発ビルド時のみ**行う。
+
+0.1.3のバッファ対策は、通常の自動テストに加え、テレビを使わない次の試験で確認できる。Windows上で実行し、テスト出力先の`tools/ffmpeg.exe`へ同梱FFmpegをコピーしておく。いずれもテスト模様のみを生成し、PC音声や実画面は取得しない。
+
+```powershell
+$env:PYTHONUTF8='1'; $env:PYTHONIOENCODING='utf-8'; $env:CI='true'
+New-Item -ItemType Directory -Force artifacts/local-test-build/tools | Out-Null
+Copy-Item .tools/ffmpeg/ffmpeg.exe artifacts/local-test-build/tools/ffmpeg.exe
+$build = (Join-Path (Get-Location) 'artifacts/local-test-build/')
+# 30fps・1080p・11分。30秒ごとに消費側を1.5秒止め、古い映像の破棄を確認する。
+./.tools/dotnet/dotnet.exe run --project tests/SaruCast.Tests -c Release --no-restore "-p:OutputPath=$build" -- --encoder-soak artifacts/local-encoder-soak 660
+# localhostだけでTLS・暗号化H.264/Opus・高遅延通知・再接続を検証する。
+./.tools/dotnet/dotnet.exe run --project tests/SaruCast.Tests -c Release --no-restore "-p:OutputPath=$build" -- --recovery-integration artifacts/local-recovery-check
+```
+
+soakの`success=false`は途中経過を意味し、自然終了した最終JSONの`success=true`だけを完了とする。生成された`recovered.h264`と`video-1.h264`／`video-2.h264`は同梱FFmpegで復号し、破棄と再接続をまたいで参照フレームのエラーがないことも確認する。これらはテレビの表示遅延の検証ではない。
 
 発行は.NET 10 LTS / win-x64 / SelfContained=true / PublishSingleFile=false。RuntimeFrameworkVersion=10.0.14を指定し、WPFのtrimming・NativeAOTを使用しない。外部PATHのFFmpegへ依存しない。FFmpegはLGPL構成、外部codecライブラリなし、MinGWランタイムは静的リンク。H.264はWindows標準Media Foundation、Opusは管理コードのConcentus。対応するFFmpegソース全体とビルド設定をZIPのsourcesへ含める。生成物はGit対象外。コンパイラ差によるバイナリの完全一致は保証しない。
 
@@ -59,7 +74,7 @@ $env:PYTHONUTF8='1'; $env:PYTHONIOENCODING='utf-8'; $env:CI='true'
 空白入りの新しい検証フォルダーへ全展開し、同梱ハッシュ、外部.NETを参照しない起動、GPU／ソフトウェアH.264の4秒・60フレームの復号と、復号画像が全面黒ではないことを検査する。クリーンな別PCでの確認とは区別する。
 
 ```powershell
-./scripts/verify-package.ps1 -DestinationDirectory 'artifacts/SaruCast 0.1.2 package check'
+./scripts/verify-package.ps1 -DestinationDirectory 'artifacts/SaruCast 0.1.3 package check'
 ```
 
 ## 署名
@@ -88,4 +103,4 @@ NSISはUbuntu公式の3.09-4ubuntu1の2パッケージをSHA-256固定で取得�
 
 利用者単位の導入（RequestExecutionLevel=user）。両ショートカットを標準で作成し、アンインストール登録も現在のユーザーに限定する。任意の署名証明書は`-CertificateThumbprint`でセットアップEXEへ適用できる。今回の配布物は未署名。
 
-既存v0.1.2 ZIPのハッシュとアプリは維持する。追加インストーラーのビルド定義は`v0.1.2-installer.1`タグで固定し、セットアップのInstaller-Info.txtへ入力ZIPのハッシュと包装用ソースcommitを記録する。元のv0.1.2タグは変更しない。
+v0.1.3は同じタグのソースからZIPとインストーラーを発行し、セットアップのInstaller-Info.txtへ入力ZIPのハッシュとソースcommitを記録する。公開後に両配布物とSHA-256ファイルを再ダウンロードし、チェックサムを照合する。既存のv0.1.2 ZIP、追加インストーラー、`v0.1.2`／`v0.1.2-installer.1`タグは変更しない。

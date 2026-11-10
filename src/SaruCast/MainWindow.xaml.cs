@@ -81,6 +81,7 @@ public partial class MainWindow : Window
             ReadOptions(); settings.Television = device.Address; settings.Save();
             search?.Cancel(); start = CancellationTokenSource.CreateLinkedTokenSource(life.Token);
             session = new(); var currentSession = session;
+            session.Activity += message => Dispatcher.InvokeAsync(() => { if (session == currentSession) AppendActivity(message); });
             session.Status += status => Dispatcher.InvokeAsync(() => { if (session == currentSession && !stopping) State.Text = status; });
             session.Disconnected += message => Dispatcher.InvokeAsync(async () => { if (session == currentSession && !stopping) await StopAsync(message); });
             ToggleInputs(false); StartStop.Content = "キャンセル";
@@ -121,6 +122,13 @@ public partial class MainWindow : Window
     }
     private void ToggleInputs(bool enabled)
     { Televisions.IsEnabled = Screens.IsEnabled = Sound.IsEnabled = Refresh.IsEnabled = Advanced.IsEnabled = enabled; }
+    internal void AppendActivity(string message)
+    {
+        // Bound both the visible log and its backing string during long presentations.
+        var lines = ActivityLog.Text.Split('\n', StringSplitOptions.RemoveEmptyEntries).TakeLast(99);
+        ActivityLog.Text = string.Join("\n", lines.Append($"{DateTime.Now:HH:mm:ss} {message}")) + "\n";
+        ActivityPanel.IsExpanded = true; ActivityLog.ScrollToEnd();
+    }
     private static string FriendlyError(Exception e)
     {
         Log.Write($"Operation failed {e.GetType().Name}");

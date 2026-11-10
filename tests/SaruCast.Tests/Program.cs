@@ -4,6 +4,16 @@ using Encoder = SaruCast.Encoder;
 
 string testData = Path.Combine(Path.GetTempPath(), "SaruCast-test-data-" + Guid.NewGuid().ToString("N"));
 Environment.SetEnvironmentVariable("SARUCAST_DATA_ROOT", testData);
+if (args.Length > 0 && args[0] == "--encoder-soak")
+{
+    await EncoderSoak.RunAsync(args);
+    Directory.Delete(testData, true); return;
+}
+if (args.Length > 0 && args[0] == "--recovery-integration")
+{
+    await RecoveryIntegration.RunAsync(Path.GetFullPath(args[1]));
+    Directory.Delete(testData, true); return;
+}
 int passed = 0;
 void Check(bool value, string name) { if (!value) throw new Exception("FAIL: " + name); Console.WriteLine("PASS: " + name); passed++; }
 void Reject(Action action, string name) { try { action(); } catch (InvalidDataException) { Check(true, name); return; } throw new Exception("FAIL: " + name); }
@@ -23,6 +33,7 @@ var records = new[] { new DnsRecord(Mdns.Service, 12, [], "tv." + Mdns.Service),
 Check(Mdns.Resolve(records).Single() == new CastDevice("TV1", "192.168.1.5"), "DNS-SD friendly name and endpoint");
 Check(Mdns.Resolve(records.Select(r => r with { Ttl = 0 })).Count == 0, "DNS goodbye ignored");
 await NativeChecks.RunAsync(Check);
+await LatencyChecks.RunAsync(Check);
 await ClosingChecks.RunAsync(false); Check(true, "WPF close without reentrant Close");
 await ClosingChecks.RunAsync(true); Check(true, "WPF repeated close shares shutdown");
 await ClosingChecks.RunConnectingAsync(); Check(true, "WPF close cancels pending native negotiation and sends STOP");

@@ -1,5 +1,6 @@
 // SaruCast changes: route/bind to selected NIC, 1200-byte packets, bounded pacing,
-// and route each RTCP sub-packet independently for simultaneous A/V streams.
+// route each RTCP sub-packet independently for simultaneous A/V streams, and use
+// a Windows high-resolution timer rather than a coarse Task.Delay(1) for pacing.
 using System.Collections.Concurrent;
 using System.Buffers.Binary;
 using System.Net;
@@ -18,6 +19,7 @@ public sealed class CastStreamingTransport : IAsyncDisposable
 {
     private readonly Socket _socket;
     private readonly SemaphoreSlim _sendLock = new(1, 1);
+    private readonly SaruCast.PacketPacer _pacer = new();
     private readonly ConcurrentDictionary<uint, CastRtpStream> _streams = new();
     private readonly CancellationTokenSource _cts = new();
 
@@ -86,7 +88,7 @@ public sealed class CastStreamingTransport : IAsyncDisposable
             {
                 await _socket.SendAsync(packet, SocketFlags.None, ct);
                 onSent(packet.Length);
-                if (++burst % 8 == 0) await Task.Delay(1, ct);
+                if (++burst % 8 == 0) await _pacer.WaitAsync(ct);
             }
         }
         finally
@@ -141,5 +143,6 @@ public sealed class CastStreamingTransport : IAsyncDisposable
 
         _cts.Dispose();
         _sendLock.Dispose();
+        _pacer.Dispose();
     }
 }

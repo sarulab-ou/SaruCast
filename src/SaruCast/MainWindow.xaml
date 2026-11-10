@@ -16,6 +16,9 @@
    <TextBlock x:Name="State" Text="準備中…" TextWrapping="Wrap" Foreground="#29415C" Margin="0,15,0,0" MinHeight="40"/>
   </StackPanel></Border>
   <TextBlock Text="Cast Streaming · 表示の遅れはテレビとネットワークにより変わります。" TextWrapping="Wrap" FontSize="12" Foreground="#627183" Margin="2,13,2,13"/>
+  <Expander x:Name="ActivityPanel" Header="配信ログ" Margin="0,0,0,12">
+   <TextBox x:Name="ActivityLog" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" MaxHeight="140" Padding="8" FontSize="12" AutomationProperties.Name="配信ログ"/>
+  </Expander>
   <Expander x:Name="Advanced" Header="詳細設定"><StackPanel Margin="4,12,4,0">
    <TextBlock Text="テレビのIPv4アドレス（一覧にないとき）"/>
    <DockPanel Margin="0,5,0,8"><Button x:Name="Probe" Content="接続確認" DockPanel.Dock="Right" Click="Probe_Click"/><TextBox x:Name="ManualIp" Padding="8" VerticalContentAlignment="Center" AutomationProperties.Name="テレビのIPv4アドレス"/></DockPanel>
@@ -26,6 +29,6 @@
    <TextBlock Text="SDR画面に対応。HDR表示はWindows側でオフにしてください。" TextWrapping="Wrap" FontSize="12"/>
    <WrapPanel Margin="0,10,0,0"><Button Content="診断ログ" Click="Logs_Click"/><Button Content="ライセンス" Click="Licenses_Click"/></WrapPanel>
   </StackPanel></Expander>
-  <TextBlock Text="0.1.2 · 未署名テスト版 / Cast Streaming" FontSize="11" Foreground="#6B7788" Margin="2,18,2,0"/>
+  <TextBlock Text="0.1.3 · 未署名テスト版 / Cast Streaming" FontSize="11" Foreground="#6B7788" Margin="2,18,2,0"/>
  </StackPanel></ScrollViewer>
 </Window>
