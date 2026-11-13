@@ -26,7 +26,7 @@ static class UpdateWindowChecks
                 window.Closed += (_, _) => { result.TrySetResult(); dispatcher.BeginInvokeShutdown(DispatcherPriority.Background); };
                 await window.CheckUpdatesAsync();
                 var update = (Button)window.FindName("UpdateButton");
-                if (!update.IsEnabled || !update.Content.ToString()!.Contains("0.1.5")) throw new Exception("Update UI did not offer newer version");
+                if (!update.IsEnabled || !update.Content.ToString()!.Contains("0.1.6")) throw new Exception("Update UI did not offer newer version");
                 update.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 await requested.Task.WaitAsync(TimeSpan.FromSeconds(5));
                 if (((Button)window.FindName("StartStop")).IsEnabled || ((Button)window.FindName("CancelUpdate")).Visibility != Visibility.Visible) throw new Exception("Update UI allows casting during application update");
@@ -45,8 +45,8 @@ static class UpdateWindowChecks
             if (request.RequestUri!.Host == "api.github.com")
             {
                 object[] assets = new[] { AppUpdateService.ZipName, AppUpdateService.ZipName + ".sha256" }.Select(name => (object)new
-                { name, state = "uploaded", size = 88, browser_download_url = AppUpdateService.AssetUrl("v0.1.5", name).AbsoluteUri }).ToArray();
-                return new(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(new[] { new { draft = false, tag_name = "v0.1.5", published_at = "2026-11-13", assets } })) };
+                { name, state = "uploaded", size = 88, browser_download_url = AppUpdateService.AssetUrl("v0.1.6", name).AbsoluteUri }).ToArray();
+                return new(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(new[] { new { draft = false, tag_name = "v0.1.6", published_at = "2026-11-13", assets } })) };
             }
             requested.TrySetResult(); await Task.Delay(Timeout.Infinite, ct); throw new Exception("Unexpected request completion");
         }

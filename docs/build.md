@@ -11,7 +11,7 @@ Windows PowerShell、WSL Ubuntu、既存のmake/GCC/MinGW-w64クロスコンパ�
 # 次回以降
 ./scripts/publish.ps1
 # 起動中の配布フォルダーを保って、別の場所へ発行する場合
-./scripts/publish.ps1 -PublishDirectory artifacts/release-v0.1.4
+./scripts/publish.ps1 -PublishDirectory artifacts/release-v0.1.5
 ```
 
 WSLでFFmpegだけをビルドするときも明示的に移動する。
@@ -74,7 +74,7 @@ $env:PYTHONUTF8='1'; $env:PYTHONIOENCODING='utf-8'; $env:CI='true'
 空白入りの新しい検証フォルダーへ全展開し、同梱ハッシュ、外部.NETを参照しない起動、GPU／ソフトウェアH.264の4秒・60フレームの復号と、復号画像が全面黒ではないことを検査する。クリーンな別PCでの確認とは区別する。
 
 ```powershell
-./scripts/verify-package.ps1 -DestinationDirectory 'artifacts/SaruCast 0.1.4 package check'
+./scripts/verify-package.ps1 -DestinationDirectory 'artifacts/SaruCast 0.1.5 package check'
 ```
 
 ## アイコン
@@ -126,4 +126,4 @@ NSISはUbuntu公式の3.09-4ubuntu1の2パッケージをSHA-256固定で取得�
 
 利用者単位の導入（RequestExecutionLevel=user）。両ショートカットを標準で作成し、アンインストール登録も現在のユーザーに限定する。任意の署名証明書は`-CertificateThumbprint`でセットアップEXEへ適用できる。今回の配布物は未署名。
 
-v0.1.4は同じタグのソースからZIPとインストーラーを発行し、セットアップのInstaller-Info.txtへ入力ZIPのハッシュとソースcommitを記録する。公開後に両配布物とSHA-256ファイルを再ダウンロードし、チェックサムを照合する。既存の0.1.2／0.1.3のリリースとタグは変更しない。
+v0.1.5は同じタグのソースからZIPとインストーラーを発行し、セットアップのInstaller-Info.txtへ入力ZIPのハッシュとソースcommitを記録する。公開後に両配布物とSHA-256ファイルを再ダウンロードし、チェックサムを照合する。既存の0.1.2／0.1.3のリリースとタグは変更しない。

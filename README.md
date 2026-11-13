@@ -2,9 +2,9 @@
 
 Windows 11の画面とPCの再生音声を、Google Cast対応テレビへ送るアプリです。テレビと共有する画面を選び、「キャスト開始」を押すだけで共有できます。ChromeやEdgeの起動・自動操作は使いません。
 
-**[ダウンロード（Windows x64・ZIP）](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.4/SaruCast-win-x64.zip)** · [使い方](#使い方) · [MITライセンス](LICENSE)
+**[ダウンロード（Windows x64・ZIP）](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.5/SaruCast-win-x64.zip)** · [使い方](#使い方) · [MITライセンス](LICENSE)
 
-現在のバージョンは**0.1.4（未署名の試用版）**です。アプリ内更新は0.1.4から利用できます。テレビ内蔵のミラーリング機能へ**Cast Streaming**で直接送信します。標準は**1080p上限・15fps・SDR**です。
+現在のバージョンは**0.1.5（未署名の試用版）**です。アプリ内更新は0.1.4から利用できます。テレビ内蔵のミラーリング機能へ**Cast Streaming**で直接送信します。標準は**1080p上限・15fps・SDR**です。
 
 ## できること
 
@@ -20,9 +20,9 @@ Windows 11の画面とPCの再生音声を、Google Cast対応テレビへ送る
 
 ## ダウンロード・起動
 
-**[SaruCast v0.1.4 Windows x64 ZIPをダウンロード](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.4/SaruCast-win-x64.zip)**
+**[SaruCast v0.1.5 Windows x64 ZIPをダウンロード](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.5/SaruCast-win-x64.zip)**
 
-v0.1.4をプレリリース（試用版）として配布しています。[リリースノート](https://github.com/sarulab-ou/SaruCast/releases/tag/v0.1.4) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.4/SaruCast-win-x64.zip.sha256) · [ソースからのビルド](docs/build.md)
+v0.1.5をプレリリース（試用版）として配布しています。[リリースノート](https://github.com/sarulab-ou/SaruCast/releases/tag/v0.1.5) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.5/SaruCast-win-x64.zip.sha256) · [ソースからのビルド](docs/build.md)
 
 リポジトリが非公開の場合、ダウンロードにはアクセス権のあるGitHubアカウントでのログインが必要です。開発時のローカル出力は`artifacts/SaruCast-win-x64.zip`です。
 
@@ -32,13 +32,13 @@ v0.1.4をプレリリース（試用版）として配布しています。[リ�
 
 **ZIP版が主な配布形式です。** DLLや`tools`などの同梱ファイルをそのまま保ってください。EXEだけを別の場所へ移すと動作しません。.NET Runtime、Visual C++ Runtime、FFmpeg、Bonjourなどを別途インストールする必要はありません。アプリによる自己展開もありません。
 
-旧版から手動更新する場合は、SaruCastを終了してから、新しいZIPを別のフォルダーへ全体展開してください。画面下部に`0.1.4`と表示されることを確認します。設定はユーザーフォルダーに保存するため、展開先を変えても引き継ぎます。
+旧版から手動更新する場合は、SaruCastを終了してから、新しいZIPを別のフォルダーへ全体展開してください。画面下部に`0.1.5`と表示されることを確認します。設定はユーザーフォルダーに保存するため、展開先を変えても引き継ぎます。
 
 配布物は未署名の試用版です。起動時にWindowsの警告が表示される場合があります。署名によってSmartScreenなどの警告が必ずなくなるとは保証しません。
 
 ### ショートカットが必要な場合：インストーラー版
 
-[**SaruCast-Setup-win-x64.exeをダウンロード**](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.4/SaruCast-Setup-win-x64.exe) · [SHA-256](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.4/SaruCast-Setup-win-x64.exe.sha256)
+[**SaruCast-Setup-win-x64.exeをダウンロード**](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.5/SaruCast-Setup-win-x64.exe) · [SHA-256](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.5/SaruCast-Setup-win-x64.exe.sha256)
 
 セットアップを実行すると、現在のユーザー用にインストールし、**スタートメニューとデスクトップの両方**にSaruCastのショートカットを作成します。標準の保存先は`%LOCALAPPDATA%\Programs\SaruCast`です。通常は管理者権限を必要としません。必要なDLL・ランタイム・FFmpegを含み、初回ダウンロードはありません。
 
