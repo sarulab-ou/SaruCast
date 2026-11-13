@@ -51,7 +51,7 @@ Check(Mdns.Resolve(records.Select(r => r with { Ttl = 0 })).Count == 0, "DNS goo
 await NativeChecks.RunAsync(Check);
 await LatencyChecks.RunAsync(Check);
 await UpdateChecks.RunAsync(Check);
-await UpdateWindowChecks.RunAsync(); Check(true, "WPF update offer, disabled casting and closing during download preserve original app");
+await UpdateWindowChecks.RunAsync(); Check(true, "WPF Help/About/update menu, disabled casting and closing during download preserve original app");
 await ClosingChecks.RunAsync(false); Check(true, "WPF close without reentrant Close");
 await ClosingChecks.RunAsync(true); Check(true, "WPF repeated close shares shutdown");
 await ClosingChecks.RunConnectingAsync(); Check(true, "WPF close cancels pending native negotiation and sends STOP");

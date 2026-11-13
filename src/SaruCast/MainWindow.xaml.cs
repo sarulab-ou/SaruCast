@@ -135,23 +135,23 @@ public partial class MainWindow : Window
         }
     }
     private void ToggleInputs(bool enabled)
-    { Televisions.IsEnabled = Screens.IsEnabled = Sound.IsEnabled = Refresh.IsEnabled = Advanced.IsEnabled = enabled; RefreshUpdateButton(); }
-    private void RefreshUpdateButton() => UpdateButton.IsEnabled = !checkingUpdate && !updating && !closing && !probing && !stopping && session == null;
+    { Televisions.IsEnabled = Screens.IsEnabled = Sound.IsEnabled = Refresh.IsEnabled = Advanced.IsEnabled = enabled; RefreshUpdateMenu(); }
+    private void RefreshUpdateMenu() => UpdateMenu.IsEnabled = !checkingUpdate && !updating && !closing && !probing && !stopping && session == null;
     internal async Task CheckUpdatesAsync()
     {
         if (checkingUpdate || updating || closing) return;
-        availableUpdate = null; UpdateButton.Content = "更新を確認";
-        checkingUpdate = true; RefreshUpdateButton(); UpdateHint.Text = "GitHubの更新を確認中…";
+        availableUpdate = null; UpdateMenu.ToolTip = "新しい公開バージョンを確認します。";
+        checkingUpdate = true; RefreshUpdateMenu(); UpdateHint.Text = "GitHubの更新を確認中…";
         try
         {
             bool installed = UpdateManager.IsInstalled(updateDirectory);
             availableUpdate = await updater.CheckAsync(AppUpdateService.CurrentVersion, installed, life.Token);
-            UpdateButton.Content = availableUpdate == null ? "更新を確認" : $"v{availableUpdate.Version} に更新";
-            UpdateHint.Text = availableUpdate == null ? "新しい更新はありません。" : $"v{availableUpdate.Version} が利用できます。キャスト停止後に更新できます。適用すると再起動します。";
+            UpdateMenu.ToolTip = availableUpdate == null ? "新しい公開バージョンを確認します。" : $"v{availableUpdate.Version} をダウンロードして更新します。";
+            UpdateHint.Text = availableUpdate == null ? "新しい更新はありません。" : $"v{availableUpdate.Version} が利用できます。キャスト停止後に「ヘルプ → 更新」を選ぶと、ダウンロードして再起動します。";
         }
         catch (OperationCanceledException) { if (!closing) UpdateHint.Text = "更新を確認できませんでした。時間をおいて再確認してください。"; }
         catch (Exception e) { Log.Error("Update check failed", e); UpdateHint.Text = "更新を確認できませんでした。ネットワークを確認して再確認してください。"; }
-        finally { checkingUpdate = false; RefreshUpdateButton(); }
+        finally { checkingUpdate = false; RefreshUpdateMenu(); }
     }
     private async void Update_Click(object sender, RoutedEventArgs e)
     {
@@ -161,7 +161,7 @@ public partial class MainWindow : Window
     }
     private async Task UpdateAsync(AppRelease release)
     {
-        updating = true; RefreshUpdateButton(); StartStop.IsEnabled = false; ToggleInputs(false); CancelUpdate.Visibility = Visibility.Visible;
+        updating = true; RefreshUpdateMenu(); StartStop.IsEnabled = false; ToggleInputs(false); CancelUpdateMenu.Visibility = Visibility.Visible;
         updateCancellation = CancellationTokenSource.CreateLinkedTokenSource(life.Token);
         PreparedUpdate? downloaded = null;
         try
@@ -182,10 +182,11 @@ public partial class MainWindow : Window
         {
             if (!updateHandoff && downloaded != null) try { UpdateFiles.DeleteStage(downloaded.Root); } catch (IOException) { } catch (UnauthorizedAccessException) { }
             updateCancellation.Dispose(); updateCancellation = null; updating = false;
-            if (!closing) { StartStop.IsEnabled = true; ToggleInputs(true); CancelUpdate.Visibility = Visibility.Collapsed; }
+            if (!closing) { StartStop.IsEnabled = true; ToggleInputs(true); CancelUpdateMenu.Visibility = Visibility.Collapsed; }
         }
     }
     private void CancelUpdate_Click(object sender, RoutedEventArgs e) => updateCancellation?.Cancel();
+    private void About_Click(object sender, RoutedEventArgs e) => new AboutWindow { Owner = this }.ShowDialog();
     internal void AppendActivity(string message)
     {
         // Bound both the visible log and its backing string during long presentations.
@@ -207,7 +208,7 @@ public partial class MainWindow : Window
     private async void Probe_Click(object sender, RoutedEventArgs e)
     {
         if (probing || session != null || stopping || closing || updating) return;
-        probing = true; search?.Cancel(); Probe.IsEnabled = false; Refresh.IsEnabled = false; StartStop.IsEnabled = false; RefreshUpdateButton();
+        probing = true; search?.Cancel(); Probe.IsEnabled = false; Refresh.IsEnabled = false; StartStop.IsEnabled = false; RefreshUpdateMenu();
         try
         {
             var device = Device(); State.Text = "接続先を確認中…";
@@ -216,7 +217,7 @@ public partial class MainWindow : Window
             State.Text = "Google Castの応答を確認しました。キャスト開始を押してください。";
         }
         catch (Exception error) { ShowError(error); }
-        finally { probing = false; Probe.IsEnabled = true; Refresh.IsEnabled = session == null; StartStop.IsEnabled = true; RefreshUpdateButton(); }
+        finally { probing = false; Probe.IsEnabled = true; Refresh.IsEnabled = session == null; StartStop.IsEnabled = true; RefreshUpdateMenu(); }
     }
     private void Logs_Click(object sender, RoutedEventArgs e) => Process.Start(new ProcessStartInfo("explorer.exe", Path.Combine(Paths.Root, "logs")) { UseShellExecute = true });
     private void Licenses_Click(object sender, RoutedEventArgs e)

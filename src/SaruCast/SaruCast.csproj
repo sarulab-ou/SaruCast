@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <AssemblyName>SaruCast</AssemblyName>
     <Product>SaruCast</Product>
-    <Version>0.1.5</Version>
+    <Version>0.1.6</Version>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
     <RuntimeFrameworkVersion>10.0.14</RuntimeFrameworkVersion>

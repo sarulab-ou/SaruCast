@@ -3,10 +3,18 @@
   <Style TargetType="Button"><Setter Property="Padding" Value="16,8"/><Setter Property="Margin" Value="4"/><Setter Property="Cursor" Value="Hand"/></Style>
   <Style TargetType="ComboBox"><Setter Property="Padding" Value="8"/><Setter Property="Margin" Value="0,7,0,15"/></Style>
  </Window.Resources>
+ <DockPanel>
+ <Menu DockPanel.Dock="Top" Background="White" Padding="6,2">
+  <MenuItem x:Name="HelpMenu" Header="ヘルプ(_H)">
+   <MenuItem Header="バージョン情報" Click="About_Click"/>
+   <MenuItem x:Name="UpdateMenu" Header="更新" Click="Update_Click"/>
+   <MenuItem x:Name="CancelUpdateMenu" Header="更新を中止" Click="CancelUpdate_Click" Visibility="Collapsed"/>
+  </MenuItem>
+ </Menu>
  <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="28,22">
-  <DockPanel><WrapPanel DockPanel.Dock="Right" VerticalAlignment="Center"><Button x:Name="UpdateButton" Content="更新を確認" Click="Update_Click"/><Button x:Name="CancelUpdate" Content="中止" Click="CancelUpdate_Click" Visibility="Collapsed"/></WrapPanel><TextBlock Text="SaruCast" FontSize="31" FontWeight="Bold" Foreground="#152E4A"/></DockPanel>
+  <TextBlock Text="SaruCast" FontSize="31" FontWeight="Bold" Foreground="#152E4A"/>
   <TextBlock Text="PCの画面を、テレビへ。" Foreground="#526273" Margin="0,3,0,8"/>
-  <TextBlock x:Name="UpdateHint" Text="更新があれば、ボタンからダウンロードして適用できます。" TextWrapping="Wrap" FontSize="12" Foreground="#526273" Margin="0,0,0,15"/>
+  <TextBlock x:Name="UpdateHint" Text="ヘルプ → 更新から新しいバージョンを確認できます。" TextWrapping="Wrap" FontSize="12" Foreground="#526273" Margin="0,0,0,15"/>
   <Border Background="White" CornerRadius="12" Padding="19"><StackPanel>
    <DockPanel><Button x:Name="Refresh" Content="再検索" DockPanel.Dock="Right" Click="Refresh_Click" Padding="12,4"/><TextBlock Text="送信先テレビ" VerticalAlignment="Center" FontWeight="SemiBold"/></DockPanel>
    <ComboBox x:Name="Televisions" AutomationProperties.Name="送信先テレビ"/>
@@ -32,4 +40,5 @@
   </StackPanel></Expander>
   <TextBlock x:Name="VersionText" FontSize="11" Foreground="#6B7788" Margin="2,18,2,0"/>
  </StackPanel></ScrollViewer>
+ </DockPanel>
 </Window>
