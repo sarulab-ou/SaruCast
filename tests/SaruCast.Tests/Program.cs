@@ -15,6 +15,22 @@ if (args.Length > 0 && args[0] == "--recovery-integration")
     Directory.Delete(testData, true); return;
 }
 int passed = 0;
+if (args.Length == 3 && args[0] == "--update-integration")
+{
+    await UpdateIntegration.RunAsync(args[1], args[2]); Directory.Delete(testData, true); return;
+}
+if (args.Length == 2 && args[0] == "--update-feed-test")
+{
+    await UpdateIntegration.FeedAsync(args[1]); return;
+}
+if (args.Length == 2 && args[0] == "--update-download-test")
+{
+    await UpdateIntegration.DownloadAsync(args[1]); Directory.Delete(testData, true); return;
+}
+if (args.Length == 3 && args[0] == "--update-installer-test")
+{
+    await UpdateIntegration.InstallerAsync(args[1], args[2]); return;
+}
 void Check(bool value, string name) { if (!value) throw new Exception("FAIL: " + name); Console.WriteLine("PASS: " + name); passed++; }
 void Reject(Action action, string name) { try { action(); } catch (InvalidDataException) { Check(true, name); return; } throw new Exception("FAIL: " + name); }
 var frame = new CastFrame("source", "destination", CastClient.Receiver, "{\"type\":\"日本語\"}");
@@ -34,6 +50,8 @@ Check(Mdns.Resolve(records).Single() == new CastDevice("TV1", "192.168.1.5"), "D
 Check(Mdns.Resolve(records.Select(r => r with { Ttl = 0 })).Count == 0, "DNS goodbye ignored");
 await NativeChecks.RunAsync(Check);
 await LatencyChecks.RunAsync(Check);
+await UpdateChecks.RunAsync(Check);
+await UpdateWindowChecks.RunAsync(); Check(true, "WPF update offer, disabled casting and closing during download preserve original app");
 await ClosingChecks.RunAsync(false); Check(true, "WPF close without reentrant Close");
 await ClosingChecks.RunAsync(true); Check(true, "WPF repeated close shares shutdown");
 await ClosingChecks.RunConnectingAsync(); Check(true, "WPF close cancels pending native negotiation and sends STOP");

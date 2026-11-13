@@ -18,9 +18,18 @@ public partial class MainWindow : Window
     private Task? starting;
     private Task? stopTask;
     private bool stopping, probing, closing, allowClose;
-    public MainWindow()
+    private readonly AppUpdateService updater;
+    private readonly string updateDirectory;
+    private AppRelease? availableUpdate;
+    private CancellationTokenSource? updateCancellation;
+    private Task? updateTask;
+    private bool checkingUpdate, updating, updateHandoff;
+    public MainWindow() : this(new AppUpdateService(), AppContext.BaseDirectory) { }
+    internal MainWindow(AppUpdateService updater, string updateDirectory)
     {
+        this.updater = updater; this.updateDirectory = updateDirectory;
         InitializeComponent();
+        VersionText.Text = $"{AppUpdateService.CurrentVersion} · 未署名テスト版 / Cast Streaming";
         Sound.IsChecked = settings.Audio; Hardware.IsChecked = settings.Hardware; Gdi.IsChecked = settings.Gdi;
         Quality.SelectedIndex = settings.Height <= 720 ? 1 : 0;
         FrameRate.SelectedIndex = Settings.NormalizeFrameRate(settings.FrameRate) switch { 15 => 1, 30 => 2, _ => 0 };
@@ -28,7 +37,12 @@ public partial class MainWindow : Window
         Screens.ItemsSource = Displays.List();
         Screens.SelectedItem = Screens.Items.Cast<DisplayInfo>().FirstOrDefault(d => d.DeviceName == settings.Display) ?? Screens.Items.Cast<DisplayInfo>().FirstOrDefault();
         Televisions.DropDownClosed += (_, _) => { if (Televisions.SelectedItem != null) ManualIp.Clear(); };
-        Loaded += async (_, _) => await SearchAsync();
+        Loaded += async (_, _) => { _ = CheckUpdatesAsync(); await SearchAsync(); };
+        if (UpdateManager.TakeResult(updateDirectory) is { } result)
+        {
+            UpdateHint.Text = result.Message; AppendActivity(result.Message);
+            if (result.Success) _ = UpdateManager.CleanupAsync(result);
+        }
         Closing += OnClosing;
         SystemEvents.PowerModeChanged += PowerChanged;
         NetworkChange.NetworkAvailabilityChanged += AvailabilityChanged;
@@ -72,7 +86,7 @@ public partial class MainWindow : Window
     }
     private async void StartStop_Click(object sender, RoutedEventArgs e)
     {
-        if (stopping || probing || closing) return;
+        if (stopping || probing || closing || updating) return;
         if (session != null || start != null) { await StopAsync("停止しました。"); return; }
         try
         {
@@ -121,7 +135,57 @@ public partial class MainWindow : Window
         }
     }
     private void ToggleInputs(bool enabled)
-    { Televisions.IsEnabled = Screens.IsEnabled = Sound.IsEnabled = Refresh.IsEnabled = Advanced.IsEnabled = enabled; }
+    { Televisions.IsEnabled = Screens.IsEnabled = Sound.IsEnabled = Refresh.IsEnabled = Advanced.IsEnabled = enabled; RefreshUpdateButton(); }
+    private void RefreshUpdateButton() => UpdateButton.IsEnabled = !checkingUpdate && !updating && !closing && !probing && !stopping && session == null;
+    internal async Task CheckUpdatesAsync()
+    {
+        if (checkingUpdate || updating || closing) return;
+        availableUpdate = null; UpdateButton.Content = "更新を確認";
+        checkingUpdate = true; RefreshUpdateButton(); UpdateHint.Text = "GitHubの更新を確認中…";
+        try
+        {
+            bool installed = UpdateManager.IsInstalled(updateDirectory);
+            availableUpdate = await updater.CheckAsync(AppUpdateService.CurrentVersion, installed, life.Token);
+            UpdateButton.Content = availableUpdate == null ? "更新を確認" : $"v{availableUpdate.Version} に更新";
+            UpdateHint.Text = availableUpdate == null ? "新しい更新はありません。" : $"v{availableUpdate.Version} が利用できます。キャスト停止後に更新できます。適用すると再起動します。";
+        }
+        catch (OperationCanceledException) { if (!closing) UpdateHint.Text = "更新を確認できませんでした。時間をおいて再確認してください。"; }
+        catch (Exception e) { Log.Error("Update check failed", e); UpdateHint.Text = "更新を確認できませんでした。ネットワークを確認して再確認してください。"; }
+        finally { checkingUpdate = false; RefreshUpdateButton(); }
+    }
+    private async void Update_Click(object sender, RoutedEventArgs e)
+    {
+        if (updating || closing || probing || stopping || session != null) return;
+        if (availableUpdate == null) { await CheckUpdatesAsync(); return; }
+        updateTask = UpdateAsync(availableUpdate); await updateTask;
+    }
+    private async Task UpdateAsync(AppRelease release)
+    {
+        updating = true; RefreshUpdateButton(); StartStop.IsEnabled = false; ToggleInputs(false); CancelUpdate.Visibility = Visibility.Visible;
+        updateCancellation = CancellationTokenSource.CreateLinkedTokenSource(life.Token);
+        PreparedUpdate? downloaded = null;
+        try
+        {
+            UpdateManager.EnsureWritable(updateDirectory);
+            bool installed = UpdateManager.IsInstalled(updateDirectory);
+            var progress = new Progress<int>(value => { if (!closing) UpdateHint.Text = $"更新をダウンロード中… {value}%"; });
+            downloaded = await updater.DownloadAsync(release, installed, progress, updateCancellation.Token);
+            UpdateHint.Text = "更新ファイルを確認し、再起動を準備しています…";
+            string plan = await Task.Run(() => UpdateManager.PrepareAsync(downloaded, updateDirectory, updateCancellation.Token));
+            updateCancellation.Token.ThrowIfCancellationRequested();
+            ReadOptions(); settings.Save();
+            UpdateManager.Launch(plan); updateHandoff = true; Close();
+        }
+        catch (OperationCanceledException) { if (!closing) UpdateHint.Text = "更新を中止しました。元のアプリは変更していません。"; }
+        catch (Exception error) { Log.Error("Update download failed", error); if (!closing) UpdateHint.Text = "更新できませんでした: " + error.Message; }
+        finally
+        {
+            if (!updateHandoff && downloaded != null) try { UpdateFiles.DeleteStage(downloaded.Root); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+            updateCancellation.Dispose(); updateCancellation = null; updating = false;
+            if (!closing) { StartStop.IsEnabled = true; ToggleInputs(true); CancelUpdate.Visibility = Visibility.Collapsed; }
+        }
+    }
+    private void CancelUpdate_Click(object sender, RoutedEventArgs e) => updateCancellation?.Cancel();
     internal void AppendActivity(string message)
     {
         // Bound both the visible log and its backing string during long presentations.
@@ -142,8 +206,8 @@ public partial class MainWindow : Window
     private void ShowError(Exception e) => State.Text = FriendlyError(e);
     private async void Probe_Click(object sender, RoutedEventArgs e)
     {
-        if (probing || session != null || stopping || closing) return;
-        probing = true; search?.Cancel(); Probe.IsEnabled = false; Refresh.IsEnabled = false; StartStop.IsEnabled = false;
+        if (probing || session != null || stopping || closing || updating) return;
+        probing = true; search?.Cancel(); Probe.IsEnabled = false; Refresh.IsEnabled = false; StartStop.IsEnabled = false; RefreshUpdateButton();
         try
         {
             var device = Device(); State.Text = "接続先を確認中…";
@@ -152,7 +216,7 @@ public partial class MainWindow : Window
             State.Text = "Google Castの応答を確認しました。キャスト開始を押してください。";
         }
         catch (Exception error) { ShowError(error); }
-        finally { probing = false; Probe.IsEnabled = true; Refresh.IsEnabled = session == null; StartStop.IsEnabled = true; }
+        finally { probing = false; Probe.IsEnabled = true; Refresh.IsEnabled = session == null; StartStop.IsEnabled = true; RefreshUpdateButton(); }
     }
     private void Logs_Click(object sender, RoutedEventArgs e) => Process.Start(new ProcessStartInfo("explorer.exe", Path.Combine(Paths.Root, "logs")) { UseShellExecute = true });
     private void Licenses_Click(object sender, RoutedEventArgs e)
@@ -171,8 +235,10 @@ public partial class MainWindow : Window
         // WPF forbids a second Close() while the original Closing event is on the stack.
         await Task.Yield();
         life.Cancel(); search?.Cancel(); await StopAsync("終了中…");
+        if (!updateHandoff && updateTask != null) await updateTask;
         ReadOptions(); try { settings.Save(); } catch (IOException) { } catch (UnauthorizedAccessException) { }
         SystemEvents.PowerModeChanged -= PowerChanged; NetworkChange.NetworkAvailabilityChanged -= AvailabilityChanged;
+        updater.Dispose();
         allowClose = true; Close();
     }
 }

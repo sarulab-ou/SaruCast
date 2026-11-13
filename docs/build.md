@@ -11,7 +11,7 @@ Windows PowerShell、WSL Ubuntu、既存のmake/GCC/MinGW-w64クロスコンパ�
 # 次回以降
 ./scripts/publish.ps1
 # 起動中の配布フォルダーを保って、別の場所へ発行する場合
-./scripts/publish.ps1 -PublishDirectory artifacts/release-v0.1.3
+./scripts/publish.ps1 -PublishDirectory artifacts/release-v0.1.4
 ```
 
 WSLでFFmpegだけをビルドするときも明示的に移動する。
@@ -74,7 +74,7 @@ $env:PYTHONUTF8='1'; $env:PYTHONIOENCODING='utf-8'; $env:CI='true'
 空白入りの新しい検証フォルダーへ全展開し、同梱ハッシュ、外部.NETを参照しない起動、GPU／ソフトウェアH.264の4秒・60フレームの復号と、復号画像が全面黒ではないことを検査する。クリーンな別PCでの確認とは区別する。
 
 ```powershell
-./scripts/verify-package.ps1 -DestinationDirectory 'artifacts/SaruCast 0.1.3 package check'
+./scripts/verify-package.ps1 -DestinationDirectory 'artifacts/SaruCast 0.1.4 package check'
 ```
 
 ## アイコン
@@ -82,6 +82,23 @@ $env:PYTHONUTF8='1'; $env:PYTHONIOENCODING='utf-8'; $env:CI='true'
 `src/SaruCast/Assets/SaruCast.ico`は、青・赤・黄・緑で「Cast」と記したアプリアイコン。16／24／32／48／64／128／256pxを含む。EXEとWPFウィンドウに埋め込み、NSISのセットアップ／アンインストーラーにも同じICOを使う。ショートカットはアプリEXEのアイコンを参照する。
 
 ICOを再生成する場合は、WindowsのSegoe UIとSystem.Drawingを使って`./scripts/build-icon.ps1`を実行する。プレビューは`artifacts/SaruCast-icon-preview.png`。ICOはソース管理するため、通常のビルドや利用者のPCでは生成処理は不要。
+
+## 更新機能の検証
+
+通常テストはHTTP応答を模擬し、release選択、SHA-256、ZIPのパス・manifest、所有ファイルの置換、途中失敗からの復元、WPFの中止／終了を確認する。公開先を変更する開発用設定はアプリへ追加しない。
+
+配布ZIPを作った後、テレビや実際のアプリに触れず、コピーした配布EXEで更新ヘルパーを試せる。出力先は新しいフォルダーを選ぶ。以下のbinパスはpublish.ps1のテスト出力先である。
+
+```powershell
+./scripts/publish.ps1 -PublishDirectory artifacts/update-preview
+./artifacts/build/SaruCast.Tests.exe --update-feed-test artifacts/update-feed-check.json
+./artifacts/build/SaruCast.Tests.exe --update-download-test artifacts/update-live-download.json
+./artifacts/build/SaruCast.Tests.exe --update-integration artifacts/update-preview artifacts/update-apply-check
+```
+
+後者は同じ版を隔離コピーへ適用し、GUID staging、実ヘルパープロセス、元プロセスの終了待ち、ファイル入れ替え、利用者ファイルの維持、同梱ランタイムでの起動を確認する。`Restart=false`の計画で試験し、GUIを自動で開かず`--diagnose`を起動する。実際に新しい公開版を利用者のインストールへ適用した試験とは区別する。
+
+`tests/SaruCast.Tests/Fixtures/UpdateInstaller.nsi`は登録やショートカットを変えない試験用セットアップ。WSLの固定NSISでAPP_VERSION、APP_DLL、OUTPUT_FILEを指定してビルドし、`SaruCast.Tests.exe --update-installer-test <fixture.exe> <新しい出力先>`で、NSISへの日本語・空白・記号入りパスと終了コードを検証できる。
 
 ## 署名
 
@@ -109,4 +126,4 @@ NSISはUbuntu公式の3.09-4ubuntu1の2パッケージをSHA-256固定で取得�
 
 利用者単位の導入（RequestExecutionLevel=user）。両ショートカットを標準で作成し、アンインストール登録も現在のユーザーに限定する。任意の署名証明書は`-CertificateThumbprint`でセットアップEXEへ適用できる。今回の配布物は未署名。
 
-v0.1.3は同じタグのソースからZIPとインストーラーを発行し、セットアップのInstaller-Info.txtへ入力ZIPのハッシュとソースcommitを記録する。公開後に両配布物とSHA-256ファイルを再ダウンロードし、チェックサムを照合する。既存のv0.1.2 ZIP、追加インストーラー、`v0.1.2`／`v0.1.2-installer.1`タグは変更しない。
+v0.1.4は同じタグのソースからZIPとインストーラーを発行し、セットアップのInstaller-Info.txtへ入力ZIPのハッシュとソースcommitを記録する。公開後に両配布物とSHA-256ファイルを再ダウンロードし、チェックサムを照合する。既存の0.1.2／0.1.3のリリースとタグは変更しない。

@@ -2,9 +2,9 @@
 
 Windows 11の画面とPCの再生音声を、Google Cast対応テレビへ送るアプリです。テレビと共有する画面を選び、「キャスト開始」を押すだけで共有できます。ChromeやEdgeの起動・自動操作は使いません。
 
-**[ダウンロード（Windows x64・ZIP）](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.3/SaruCast-win-x64.zip)** · [使い方](#使い方) · [MITライセンス](LICENSE)
+**[ダウンロード（Windows x64・ZIP）](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.4/SaruCast-win-x64.zip)** · [使い方](#使い方) · [MITライセンス](LICENSE)
 
-現在のバージョンは**0.1.3（未署名の試用版）**です。テレビ内蔵のミラーリング機能へ**Cast Streaming**で直接送信します。標準は**1080p上限・15fps・SDR**です。
+現在のバージョンは**0.1.4（未署名の試用版）**です。アプリ内更新は0.1.4から利用できます。テレビ内蔵のミラーリング機能へ**Cast Streaming**で直接送信します。標準は**1080p上限・15fps・SDR**です。
 
 ## できること
 
@@ -15,13 +15,14 @@ Windows 11の画面とPCの再生音声を、Google Cast対応テレビへ送る
 - **GPU・ソフトウェアを選べる。** 通常はGPUで映像をエンコードし、詳細設定でソフトウェア方式へ切り替えられます。
 - **設定を記憶。** 前回のテレビ・画面・音声・画質設定を保存します。アプリを開いただけで共有を始めることはありません。
 - **遅延の蓄積を抑える（0.1.3）。** 送信待ちの古い映像を破棄します。処理遅れや受信待ちが増えた場合は映像・音声の配信を作り直し、クリアした理由を画面の「配信ログ」に表示します。
+- **ボタンから更新（0.1.4）。** GitHubの新しい公開リリースを確認し、更新ボタンからダウンロード・適用・再起動できます。ZIP版とインストーラー版に対応します。
 - **追加ランタイムのインストール不要。** 必要なランタイムとFFmpegをZIPに同梱します。初回起動時の依存部品ダウンロードもありません。
 
 ## ダウンロード・起動
 
-**[SaruCast v0.1.3 Windows x64 ZIPをダウンロード](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.3/SaruCast-win-x64.zip)**
+**[SaruCast v0.1.4 Windows x64 ZIPをダウンロード](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.4/SaruCast-win-x64.zip)**
 
-v0.1.3をプレリリース（試用版）として配布しています。[リリースノート](https://github.com/sarulab-ou/SaruCast/releases/tag/v0.1.3) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.3/SaruCast-win-x64.zip.sha256) · [ソースからのビルド](docs/build.md)
+v0.1.4をプレリリース（試用版）として配布しています。[リリースノート](https://github.com/sarulab-ou/SaruCast/releases/tag/v0.1.4) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.4/SaruCast-win-x64.zip.sha256) · [ソースからのビルド](docs/build.md)
 
 リポジトリが非公開の場合、ダウンロードにはアクセス権のあるGitHubアカウントでのログインが必要です。開発時のローカル出力は`artifacts/SaruCast-win-x64.zip`です。
 
@@ -31,19 +32,29 @@ v0.1.3をプレリリース（試用版）として配布しています。[リ�
 
 **ZIP版が主な配布形式です。** DLLや`tools`などの同梱ファイルをそのまま保ってください。EXEだけを別の場所へ移すと動作しません。.NET Runtime、Visual C++ Runtime、FFmpeg、Bonjourなどを別途インストールする必要はありません。アプリによる自己展開もありません。
 
-旧版から更新する場合は、SaruCastを終了してから、新しいZIPを別のフォルダーへ全体展開してください。画面下部に`0.1.3`と表示されることを確認します。設定はユーザーフォルダーに保存するため、展開先を変えても引き継ぎます。
+旧版から手動更新する場合は、SaruCastを終了してから、新しいZIPを別のフォルダーへ全体展開してください。画面下部に`0.1.4`と表示されることを確認します。設定はユーザーフォルダーに保存するため、展開先を変えても引き継ぎます。
 
 配布物は未署名の試用版です。起動時にWindowsの警告が表示される場合があります。署名によってSmartScreenなどの警告が必ずなくなるとは保証しません。
 
 ### ショートカットが必要な場合：インストーラー版
 
-[**SaruCast-Setup-win-x64.exeをダウンロード**](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.3/SaruCast-Setup-win-x64.exe) · [SHA-256](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.3/SaruCast-Setup-win-x64.exe.sha256)
+[**SaruCast-Setup-win-x64.exeをダウンロード**](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.4/SaruCast-Setup-win-x64.exe) · [SHA-256](https://github.com/sarulab-ou/SaruCast/releases/download/v0.1.4/SaruCast-Setup-win-x64.exe.sha256)
 
 セットアップを実行すると、現在のユーザー用にインストールし、**スタートメニューとデスクトップの両方**にSaruCastのショートカットを作成します。標準の保存先は`%LOCALAPPDATA%\Programs\SaruCast`です。通常は管理者権限を必要としません。必要なDLL・ランタイム・FFmpegを含み、初回ダウンロードはありません。
 
 更新はインストール先のSaruCastを終了してから、同じ場所へセットアップを実行します。Windowsの「設定 → アプリ → インストールされているアプリ」またはスタートメニューの「SaruCast → アンインストール」から削除できます。設定・ログと、インストール先へ自分で追加したファイルは残します。
 
 ZIP版とインストーラー版は同じアプリです。ZIP版の展開先に上書きインストールせず、別の場所に置いてください。両者は同じユーザー設定を使います。既存の同名ショートカットがある場合は、名前を変更してからセットアップを実行してください。
+
+### アプリから更新する（0.1.4以降）
+
+起動時にGitHubのリリース情報を確認します。画面右上の**更新を確認**でも再確認できます。新しい版があると**v○○に更新**へ変わるので、キャストを停止してから押してください。ダウンロード、SHA-256の照合、適用の準備を行い、アプリを終了して更新後に再起動します。ダウンロード中は**中止**できます。クリック前に更新ファイルを自動ダウンロードすることはありません。
+
+ZIP版は同じフォルダー内のアプリと同梱部品を更新し、利用者が追加したファイルとユーザーフォルダーの設定・ログを保ちます。ZIP版で置換に失敗した場合は、置換済みファイルをバックアップから戻します。インストーラー版は同じインストール先へ新しいセットアップを実行し、Windowsのアプリ登録とショートカットも更新します。再起動後は**配信ログ**に更新結果を表示します。自動でキャストを始めることはありません。
+
+最初の1回だけ、更新機能付きの0.1.4以降をZIPまたはセットアップで導入してください。0.1.3以前には更新ボタンがありません。書き込み権限がない場所や、リンクで参照したアプリフォルダーは自動更新せず、手動更新を案内します。自動更新は通常権限で使い、管理者として起動した場合はいったん終了して通常起動し直してください。配信中や、別のSaruCastが同じフォルダーから動いている間は更新できません。
+
+更新確認は`sarulab-ou/SaruCast`の公開済みリリースを対象とします。現在配布している数値タグ（例：`v0.1.5`）の試用版も含み、未公開の下書き、同じ版、古い版は適用しません。通信に失敗した場合はアプリをそのまま使えます。更新にはGitHubと配布用CDNへのHTTPS通信が必要で、アカウントやトークンの設定は不要です。
 
 ## 使い方
 
